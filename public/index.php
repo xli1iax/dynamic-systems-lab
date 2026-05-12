@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\HomeController;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -8,20 +9,13 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $app = AppFactory::create();
 
+$app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
-$app->get('/', function (Request $request, Response $response) {
-    $response->getBody()->write('Slim works!');
-    return $response;
-});
+$homeController = new HomeController();
 
-$app->get('/api/health', function (Request $request, Response $response) {
-    $response->getBody()->write(json_encode([
-        'status' => 'ok',
-        'framework' => 'Slim'
-    ]));
+$app->get('/', [$homeController, 'index']);
 
-    return $response->withHeader('Content-Type', 'application/json');
-});
+$app->get('/api/test', [$homeController, 'testJson']);
 
 $app->run();
