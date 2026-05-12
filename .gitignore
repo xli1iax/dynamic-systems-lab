@@ -1,0 +1,15 @@
+/vendor/
+/.idea/
+/.env
+.DS_Store
+
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+composer.phar
+
+*.log
+
+node_modules/
+
+.phpunit.result.cache
