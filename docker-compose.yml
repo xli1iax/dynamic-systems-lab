@@ -1,0 +1,8 @@
+services:
+  app:
+    build: .
+    container_name: dynamic_systems_app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
