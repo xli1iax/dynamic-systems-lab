@@ -2,18 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><?= htmlspecialchars($title) ?></title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>DB test</title>
 </head>
 <body>
-<main class="container">
-    <h1><?= htmlspecialchars($title) ?></h1>
-    <p><?= htmlspecialchars($message) ?></p>
 
-    <button id="testBtn">Test API</button>
-    <pre id="output"></pre>
-</main>
+<h1>Users from database</h1>
 
-<script src="/js/app.js"></script>
+<ul>
+    <?php foreach ($users as $user): ?>
+        <li><?= htmlspecialchars($user['name']) ?></li>
+    <?php endforeach; ?>
+</ul>
+
 </body>
 </html>

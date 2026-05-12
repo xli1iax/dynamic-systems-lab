@@ -1,15 +1,32 @@
+# env / secrets
+.env
+src/.env
+
+# dependencies
 /vendor/
-/.idea/
-/.env
-.DS_Store
+/src/vendor/
 
+# logs
 /storage/logs/*
-!/storage/logs/.gitkeep
-
-composer.phar
-
 *.log
 
-node_modules/
+# IDE
+.idea/
+.vscode/
 
-.phpunit.result.cache
+# macOS
+.DS_Store
+
+# docker local data
+db_data/
+docker-compose.override.yml
+
+# cache / temp
+/tmp/
+/cache/
+
+# composer
+composer.phar
+
+# node
+node_modules/

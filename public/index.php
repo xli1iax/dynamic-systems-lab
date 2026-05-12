@@ -14,7 +14,7 @@ $app->addErrorMiddleware(true, true, true);
 
 $homeController = new HomeController();
 
-$app->get('/', [$homeController, 'index']);
+$app->get('/', [HomeController::class, 'index']);
 
 $app->get('/api/test', [$homeController, 'testJson']);
 
