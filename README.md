@@ -240,7 +240,88 @@ Install dependencies locally if needed:
 
 ```bash
 composer install
-```
 
 ```
+
+
+### Logging architecture
+
+The application uses controller-service-model architecture for request logging.
+
+Structure:
+
+```text
+Controller -> Service -> Model -> Database
 ```
+
+Logging components:
+
+```text
+src/Controllers/LogController.php
+src/Services/LogService.php
+src/Models/Log.php
+```
+
+Responsibilities:
+
+- `LogController` handles HTTP requests and responses
+- `LogService` contains business logic for logging
+- `Log` model communicates directly with the database using PDO
+
+### Request logging
+
+The application stores CAS/API request logs in the database.
+
+Database table:
+
+```text
+logs
+```
+
+Stored fields:
+
+```text
+id
+source
+command
+result
+success
+error_message
+ip_address
+created_at
+```
+
+Source examples:
+
+```text
+form
+animation
+api
+test
+```
+
+### Testing logging endpoint
+
+Test endpoint:
+
+```text
+POST /api/logs/export
+```
+
+Example Postman request:
+
+```json
+{
+  "command": "2+2",
+  "result": "4",
+  "success": true
+}
+```
+
+Expected behavior:
+
+- request is processed by `LogController`
+- business logic is handled by `LogService`
+- data is stored through `Log` model
+- log entry appears in MariaDB (`logs` table)
+

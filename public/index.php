@@ -1,21 +1,31 @@
 <?php
 
 use App\Controllers\HomeController;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
+use App\Controllers\LogController;
+use App\Models\Log;
+use App\Services\DatabaseService;
+use App\Services\LogService;
 use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../src/config.php';
 
 $app = AppFactory::create();
+
+$pdo = connectDatabase();
+
+$databaseService = new DatabaseService($pdo);
+
+$logModel = new Log($pdo);
+$logService = new LogService($logModel);
+
+$homeController = new HomeController($databaseService);
+$logController = new LogController($logService);
 
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
-$homeController = new HomeController();
-
-$app->get('/', [HomeController::class, 'index']);
-
-$app->get('/api/test', [$homeController, 'testJson']);
+$app->get('/', [$homeController, 'index']);
+$app->post('/api/logs/export', [$logController, 'export']);
 
 $app->run();
