@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Services\DatabaseService;
+use App\Models\Log;
+
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -22,4 +24,6 @@ class HomeController
         $response->getBody()->write($html);
         return $response;
     }
+
+
 }
