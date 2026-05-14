@@ -2,7 +2,73 @@
 
 namespace App\Services;
 
+use Symfony\Component\Process\Process;
+
 class OctaveService
 {
+    public function execute(string $command): mixed
+    {
+        $delayMs = getCasDelayMs();
 
+        if ($delayMs > 0) {
+            usleep($delayMs * 1000);
+        }
+
+        $wrappedCommand = "disp(jsonencode($command));";
+
+        $process = new Process([
+            'octave',
+            '--quiet',
+            '--eval',
+            $wrappedCommand
+        ]);
+
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new \RuntimeException(trim($process->getErrorOutput()));
+        }
+
+        $output = trim($process->getOutput());
+        $decoded = json_decode($output, true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $decoded;
+        }
+
+        return $output;
+    }
+
+    public function executeScript(string $script): mixed
+    {
+        $delayMs = getCasDelayMs();
+
+        if ($delayMs > 0) {
+            usleep($delayMs * 1000);
+        }
+
+        $process = new Process([
+            'octave',
+            '--quiet',
+            '--eval',
+            $script
+        ]);
+
+        $process->setTimeout(20);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            throw new \RuntimeException(trim($process->getErrorOutput()));
+        }
+
+        $output = trim($process->getOutput());
+
+        $decoded = json_decode($output, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException('Invalid JSON output from Octave: ' . $output);
+        }
+
+        return $decoded;
+    }
 }
