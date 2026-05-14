@@ -27,3 +27,13 @@ function connectDatabase(): PDO
 
     return $pdo;
 }
+
+function getApiKey(): string
+{
+    return $_ENV['API_KEY'];
+}
+
+function getCasDelayMs(): int
+{
+    return (int) ($_ENV['CAS_DELAY_MS'] ?? 0);
+}
