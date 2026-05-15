@@ -22,13 +22,19 @@ class CasController
 
     public function execute(Request $request, Response $response): Response
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $data = json_decode($request->getBody()->getContents(), true);
 
-        $command = $data['command'] ?? '';
+        $command = trim($data['command'] ?? '');
         $source = $data['source'] ?? 'api';
         $ip = $_SERVER['REMOTE_ADDR'] ?? null;
 
-        if (trim($command) === '') {
+        $_SESSION['cas_history'] ??= [];
+
+        if ($command === '') {
             return $this->json($response, [
                 'success' => false,
                 'error' => 'Command is required'
@@ -57,8 +63,29 @@ class CasController
             ], 400);
         }
 
+        $historyScript = '';
+
+        if (!empty($_SESSION['cas_history'])) {
+            $historyScript = implode(";" . PHP_EOL, $_SESSION['cas_history']) . ";" . PHP_EOL;
+        }
+
+        if (preg_match('/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=/', $command, $matches)) {
+            $variableName = $matches[1];
+
+            $fullCommand = $historyScript
+                . $command . ";" . PHP_EOL
+                . "__cas_result__ = " . $variableName . ";";
+        } else {
+            $fullCommand = $historyScript
+                . "__cas_result__ = (" . $command . ");";
+        }
+
         try {
-            $result = $this->octaveService->execute($command);
+            $result = $this->octaveService->execute($fullCommand);
+
+            if (preg_match('/^\s*[a-zA-Z_][a-zA-Z0-9_]*\s*=/', $command)) {
+                $_SESSION['cas_history'][] = $command;
+            }
 
             $this->logService->saveCasRequest(
                 $source,
@@ -89,52 +116,6 @@ class CasController
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    public function executeScript(string $script): mixed
-    {
-        $delayMs = getCasDelayMs();
-
-        if ($delayMs > 0) {
-            usleep($delayMs * 1000);
-        }
-
-        $process = new Process([
-            'octave',
-            '--quiet',
-            '--eval',
-            $script
-        ]);
-
-        $process->setTimeout(20);
-        $process->run();
-
-        if (!$process->isSuccessful()) {
-            throw new \RuntimeException(trim($process->getErrorOutput()));
-        }
-
-        $output = trim($process->getOutput());
-
-        if ($output === '') {
-            throw new \RuntimeException('Empty output from Octave.');
-        }
-
-        $jsonStart = strpos($output, '{');
-        $jsonEnd = strrpos($output, '}');
-
-        if ($jsonStart === false || $jsonEnd === false || $jsonEnd <= $jsonStart) {
-            throw new \RuntimeException('JSON output not found in Octave response: ' . $output);
-        }
-
-        $json = substr($output, $jsonStart, $jsonEnd - $jsonStart + 1);
-
-        $decoded = json_decode($json, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \RuntimeException('Invalid JSON output from Octave: ' . $json);
-        }
-
-        return $decoded;
     }
 
     private function json(Response $response, array $data, int $status = 200): Response
