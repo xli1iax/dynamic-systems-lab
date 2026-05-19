@@ -97,6 +97,8 @@ DB_PORT=3306
 
 API_KEY=your_secret_api_key
 CAS_DELAY_MS=300
+
+ANIMATION_STATS_INTERVAL_MINUTES=10
 ```
 
 `API_KEY` is used for protected API access.
