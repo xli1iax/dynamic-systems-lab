@@ -30,13 +30,17 @@ class OctaveService
         }
 
         $output = trim($process->getOutput());
-        $decoded = json_decode($output, true);
+
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $output))));
+        $lastLine = end($lines);
+
+        $decoded = json_decode($lastLine, true);
 
         if (json_last_error() === JSON_ERROR_NONE) {
             return $decoded;
         }
 
-        return $output;
+        return $lastLine;
     }
 
     public function executeScript(string $script): mixed

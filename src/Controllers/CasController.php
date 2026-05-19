@@ -63,28 +63,43 @@ class CasController
             ], 400);
         }
 
+        $commands = preg_split('/[;\r\n]+/', $command);
+        $commands = array_values(array_filter(array_map('trim', $commands)));
+
+        if (empty($commands)) {
+            return $this->json($response, [
+                'success' => false,
+                'error' => 'Command is required'
+            ], 400);
+        }
+
         $historyScript = '';
 
         if (!empty($_SESSION['cas_history'])) {
             $historyScript = implode(";" . PHP_EOL, $_SESSION['cas_history']) . ";" . PHP_EOL;
         }
 
-        if (preg_match('/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=/', $command, $matches)) {
-            $variableName = $matches[1];
+        $fullCommand = $historyScript;
 
-            $fullCommand = $historyScript
-                . $command . ";" . PHP_EOL
-                . "__cas_result__ = " . $variableName . ";";
+        foreach ($commands as $singleCommand) {
+            $fullCommand .= $singleCommand . ";" . PHP_EOL;
+        }
+
+        $lastCommand = end($commands);
+
+        if (preg_match('/^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*=/', $lastCommand, $matches)) {
+            $fullCommand .= "__cas_result__ = " . $matches[1] . ";";
         } else {
-            $fullCommand = $historyScript
-                . "__cas_result__ = (" . $command . ");";
+            $fullCommand .= "__cas_result__ = (" . $lastCommand . ");";
         }
 
         try {
             $result = $this->octaveService->execute($fullCommand);
 
-            if (preg_match('/^\s*[a-zA-Z_][a-zA-Z0-9_]*\s*=/', $command)) {
-                $_SESSION['cas_history'][] = $command;
+            foreach ($commands as $singleCommand) {
+                if (preg_match('/^\s*[a-zA-Z_][a-zA-Z0-9_]*\s*=/', $singleCommand)) {
+                    $_SESSION['cas_history'][] = $singleCommand;
+                }
             }
 
             $this->logService->saveCasRequest(
