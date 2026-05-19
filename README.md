@@ -68,6 +68,8 @@ storage/logs/
 ```bash
 composer require slim/slim slim/psr7 symfony/process monolog/monolog vlucas/phpdotenv
 composer require zircote/swagger-php 
+composer require dompdf/dompdf -W
+composer update symfony/process -W
 ```
 
 ---
