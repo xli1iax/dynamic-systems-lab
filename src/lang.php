@@ -63,6 +63,40 @@ function t(string $key): string
             'created_at' => 'Vytvorené',
             'loading_logs' => 'Načítavam logy...',
             'data_admin' => 'Dáta a administrácia',
+            'statistics_description' =>
+                'Počet použití animácií a anonymné detaily aktivity.',
+            'view_statistics' =>
+                'Zobraziť štatistiku →',
+            'logs_description' =>
+                'Zobrazenie CAS požiadaviek, chýb a export logov do CSV.',
+            'view_logs' =>
+                'Zobraziť logy →',
+            'pendulum_description' =>
+                'Interaktívna animácia inverzného kyvadla so synchronizovaným grafom.',
+
+            'ball_beam_description' =>
+                'Simulácia systému gulička na tyči s grafom v reálnom čase.',
+
+            'open_simulation' =>
+                'Otvoriť simuláciu →',
+
+            'openapi_docs' =>
+                'OpenAPI dokumentácia',
+
+            'openapi_description' =>
+                'Interaktívna API dokumentácia pre všetky backend endpointy.',
+
+            'open_docs' =>
+                'Otvoriť dokumentáciu →',
+
+            'pdf_docs' =>
+                'PDF dokumentácia',
+
+            'pdf_description' =>
+                'Dynamicky generovaná PDF dokumentácia s číslovaním strán.',
+
+            'open_pdf' =>
+                'Otvoriť PDF →',
         ],
         'en' => [
             'home_title' => 'Dynamic Systems Laboratory',
@@ -110,6 +144,40 @@ function t(string $key): string
             'created_at' => 'Created at',
             'loading_logs' => 'Loading logs...',
             'data_admin' => 'Data and administration',
+            'statistics_description' =>
+                'Animation usage statistics and anonymous activity details.',
+            'view_statistics' =>
+                'View statistics →',
+            'logs_description' =>
+                'Browse CAS requests, errors and export logs to CSV.',
+            'view_logs' =>
+                'View logs →',
+            'pendulum_description' =>
+                'Interactive inverted pendulum animation with synchronized graph.',
+
+            'ball_beam_description' =>
+                'Ball and beam simulation with real-time graph visualization.',
+
+            'open_simulation' =>
+                'Open simulation →',
+
+            'openapi_docs' =>
+                'OpenAPI documentation',
+
+            'openapi_description' =>
+                'Interactive API documentation for all backend endpoints.',
+
+            'open_docs' =>
+                'Open documentation →',
+
+            'pdf_docs' =>
+                'PDF documentation',
+
+            'pdf_description' =>
+                'Dynamically generated PDF documentation with page numbering.',
+
+            'open_pdf' =>
+                'Open PDF →',
         ],
     ];
 
