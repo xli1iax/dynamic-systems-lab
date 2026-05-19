@@ -59,7 +59,7 @@ $app->get('/cas', function ($request, $response) {
 
 $app->get('/animations/pendulum', function ($request, $response) {
     ob_start();
-    require __DIR__ . '/../views/pendulum.php';
+    require __DIR__ . '/../views/inverted-pendulum.php';
     $html = ob_get_clean();
 
     $response->getBody()->write($html);
@@ -93,14 +93,6 @@ $app->get('/logs', function ($request, $response) {
     return $response;
 });
 
-$app->get('/documentation', function ($request, $response) {
-    ob_start();
-    require __DIR__ . '/../views/documentation.php';
-    $html = ob_get_clean();
-
-    $response->getBody()->write($html);
-    return $response;
-});
 
 
 $app->post('/api/animations/pendulum', [$animationController, 'invertedPendulum'])
