@@ -1,108 +1,111 @@
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="<?= htmlspecialchars(getLang()) ?>">
 <head>
     <meta charset="UTF-8">
-    <title>Dynamic System Simulator</title>
+    <title><?= t('home_title') ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
+<nav class="language-switcher">
+    <a href="<?= langUrl('sk') ?>">SK</a>
+    <span>|</span>
+    <a href="<?= langUrl('en') ?>">EN</a>
+</nav>
+
 <main class="home-page">
     <section class="hero">
         <div class="hero-badge">WEBTE2 • LS 2025/2026</div>
 
-        <h1>Dynamic Systems Laboratory</h1>
+        <h1><?= t('home_title') ?></h1>
 
-        <p>
-            Web application for CAS calculations, dynamic system simulations,
-            synchronized graphs, request logging and API documentation.
-        </p>
+        <p><?= t('home_description') ?></p>
     </section>
 
     <section class="dashboard-section">
-        <h2>Výpočty</h2>
+        <h2><?= t('calculations') ?></h2>
 
         <div class="dashboard-grid single">
             <a href="/cas" class="dashboard-card">
                 <div class="card-icon">⌘</div>
                 <div>
-                    <h3>CAS formulár</h3>
-                    <p>Execute Octave/CAS commands manually using a web form.</p>
-                    <span>Open CAS →</span>
+                    <h3><?= t('cas_form') ?></h3>
+                    <p><?= t('cas_description') ?></p>
+                    <span><?= t('open_cas') ?></span>
                 </div>
             </a>
         </div>
     </section>
 
     <section class="dashboard-section">
-        <h2>Simulácie a grafy</h2>
+        <h2><?= t('simulations') ?></h2>
 
         <div class="dashboard-grid">
             <a href="/animations/pendulum" class="dashboard-card">
                 <div class="card-icon">⟲</div>
                 <div>
-                    <h3>Inverzné kyvadlo</h3>
-                    <p>Interactive inverted pendulum animation with synchronized graph.</p>
-                    <span>Open simulation →</span>
+                    <h3><?= t('pendulum') ?></h3>
+                    <p><?= t('pendulum_description') ?></p>
+                    <span><?= t('open_simulation') ?></span>
                 </div>
             </a>
 
             <a href="/animations/ball-beam" class="dashboard-card">
                 <div class="card-icon">●</div>
                 <div>
-                    <h3>Gulička na tyči</h3>
-                    <p>Ball and beam dynamic system simulation with real-time data.</p>
-                    <span>Open simulation →</span>
+                    <h3><?= t('ball_beam') ?></h3>
+                    <p><?= t('ball_beam_description') ?></p>
+                    <span><?= t('open_simulation') ?></span>
                 </div>
             </a>
         </div>
     </section>
 
     <section class="dashboard-section">
-        <h2>Dáta a administrácia</h2>
+        <h2><?= t('data_admin') ?></h2>
 
         <div class="dashboard-grid">
             <a href="/statistics" class="dashboard-card">
                 <div class="card-icon">◔</div>
                 <div>
-                    <h3>Štatistika animácií</h3>
-                    <p>View usage count and detailed anonymous activity records.</p>
-                    <span>View statistics →</span>
+                    <h3><?= t('statistics') ?></h3>
+                    <p><?= t('statistics_description') ?></p>
+                    <span><?= t('view_statistics') ?></span>
                 </div>
             </a>
 
             <a href="/logs" class="dashboard-card">
                 <div class="card-icon">☰</div>
                 <div>
-                    <h3>Logy a CSV export</h3>
-                    <p>Browse CAS requests, errors and export log data to CSV.</p>
-                    <span>View logs →</span>
+                    <h3><?= t('logs') ?></h3>
+                    <p><?= t('logs_description') ?></p>
+                    <span><?= t('view_logs') ?></span>
                 </div>
             </a>
         </div>
     </section>
 
     <section class="dashboard-section">
-        <h2>Dokumentácia</h2>
+        <h2><?= t('documentation') ?></h2>
 
         <div class="dashboard-grid">
             <a href="/docs" class="dashboard-card">
                 <div class="card-icon">{ }</div>
                 <div>
-                    <h3>OpenAPI dokumentácia</h3>
-                    <p>Interactive API documentation for all backend endpoints.</p>
-                    <span>Open docs →</span>
+                    <h3><?= t('openapi_docs') ?></h3>
+                    <p><?= t('openapi_description') ?></p>
+                    <span><?= t('open_docs') ?></span>
                 </div>
             </a>
 
             <a href="/documentation" class="dashboard-card">
                 <div class="card-icon">PDF</div>
                 <div>
-                    <h3>PDF dokumentácia</h3>
-                    <p>Dynamically generated documentation with page numbering.</p>
-                    <span>Open PDF →</span>
+                    <h3><?= t('pdf_docs') ?></h3>
+                    <p><?= t('pdf_description') ?></p>
+                    <span><?= t('open_pdf') ?></span>
                 </div>
             </a>
         </div>

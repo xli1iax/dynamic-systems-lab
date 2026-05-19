@@ -18,6 +18,7 @@ use App\Services\AnimationStatisticsService;
 
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/config.php';
+require_once __DIR__ . '/../src/lang.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

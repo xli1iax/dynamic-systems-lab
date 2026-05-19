@@ -362,3 +362,29 @@ body::before {
     border-radius: 22px;
     background: #162334;
 }
+.language-switcher {
+    position: fixed;
+    top: 22px;
+    right: 28px;
+    z-index: 100;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    backdrop-filter: blur(12px);
+}
+
+.language-switcher a {
+    color: #9fc7ff;
+    text-decoration: none;
+    font-weight: 700;
+    margin: 0 6px;
+}
+
+.language-switcher a:hover {
+    color: white;
+}
+
+.language-switcher span {
+    color: rgba(255,255,255,0.4);
+}
