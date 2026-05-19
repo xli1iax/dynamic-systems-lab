@@ -56,8 +56,8 @@
 <script>
     const API_KEY = <?= json_encode(getApiKey()) ?>;
 
-    let finalState = [0, 0, 0, 0];
     let animationId = null;
+    let isRunning = false;
 
     const canvas = document.getElementById('pendulumCanvas');
     const ctx = canvas.getContext('2d');
@@ -65,21 +65,6 @@
 
     const runBtn = document.getElementById('runBtn');
     const resetBtn = document.getElementById('resetBtn');
-
-    resetBtn.addEventListener('click', () => {
-        finalState = [0, 0, 0, 0];
-
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-        }
-
-        drawPendulum(
-            0,
-            0,
-            Number(document.getElementById('r').value),
-            0
-        );
-    });
 
     const chart = new Chart(chartCtx, {
         type: 'line',
@@ -115,6 +100,8 @@
                     grid: { color: 'rgba(255,255,255,0.05)' }
                 },
                 y: {
+                    min: -0.1,
+                    max: Math.max(1, Number(document.getElementById('r').value) * 1.2),
                     ticks: { color: 'rgba(245,248,255,0.6)' },
                     grid: { color: 'rgba(255,255,255,0.05)' }
                 }
@@ -127,30 +114,69 @@
         }
     });
 
-    function getScale(position, target, initPosition = 0) {
-        const maxValue = Math.max(
-            Math.abs(position),
-            Math.abs(target),
-            Math.abs(initPosition),
-            0.35
-        );
+    function stopAnimation() {
+        if (animationId !== null) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
 
-        return (canvas.width - 160) / (2 * maxValue * 1.25);
+        isRunning = false;
+        runBtn.disabled = false;
     }
 
-    function drawPendulum(position, angle, target, initPosition = 0) {
+    function safeNumber(value, fallback = 0) {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : fallback;
+    }
+
+    function calculateScale(positions, target, initPosition) {
+        const values = [
+            Math.abs(target),
+            Math.abs(initPosition),
+            ...positions.map(value => Math.abs(value))
+        ];
+
+        const maxValue = Math.max(...values, 0.35);
+        return (canvas.width - 170) / (2 * maxValue * 1.2);
+    }
+
+    function roundedRect(ctx, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + width - r, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+        ctx.lineTo(x + width, y + height - r);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+        ctx.lineTo(x + r, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    function drawPendulum(position, angle, target, initPosition = 0, fixedScale = null) {
+        position = safeNumber(position);
+        angle = safeNumber(angle);
+        target = safeNumber(target);
+        initPosition = safeNumber(initPosition);
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const centerX = canvas.width / 2;
-        const pivotY = 150;
-        const rodLength = 175;
-        const scale = getScale(position, target, initPosition);
+        const trackY = 250;
+        const rodLength = 150;
+        const scale = fixedScale ?? calculateScale([position], target, initPosition);
 
-        const pivotX = centerX + position * scale;
+        const cartCenterX = centerX + position * scale;
         const targetX = centerX + target * scale;
-        const initX = centerX + initPosition * scale;
+        const startX = centerX + initPosition * scale;
 
-        const bg = ctx.createRadialGradient(centerX, pivotY, 40, centerX, pivotY, 430);
+        const pivotX = cartCenterX;
+        const pivotY = trackY - 48;
+
+        const bg = ctx.createRadialGradient(centerX, 160, 50, centerX, 160, 430);
         bg.addColorStop(0, 'rgba(94,168,255,0.14)');
         bg.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = bg;
@@ -161,29 +187,29 @@
 
         for (let x = 60; x < canvas.width; x += 45) {
             ctx.beginPath();
-            ctx.moveTo(x, 70);
+            ctx.moveTo(x, 60);
             ctx.lineTo(x, canvas.height - 40);
             ctx.stroke();
         }
 
-        ctx.strokeStyle = 'rgba(255,255,255,0.20)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(50, pivotY);
-        ctx.lineTo(canvas.width - 50, pivotY);
+        ctx.moveTo(45, trackY);
+        ctx.lineTo(canvas.width - 45, trackY);
         ctx.stroke();
 
         ctx.strokeStyle = 'rgba(255,255,255,0.25)';
         ctx.setLineDash([5, 7]);
         ctx.beginPath();
-        ctx.moveTo(initX, 55);
-        ctx.lineTo(initX, canvas.height - 45);
+        ctx.moveTo(startX, 55);
+        ctx.lineTo(startX, canvas.height - 45);
         ctx.stroke();
         ctx.setLineDash([]);
 
         ctx.fillStyle = 'rgba(255,255,255,0.65)';
         ctx.font = '12px Arial';
-        ctx.fillText('start', initX + 7, 72);
+        ctx.fillText('start', startX + 7, 72);
 
         ctx.strokeStyle = 'rgba(94,168,255,0.75)';
         ctx.setLineDash([8, 8]);
@@ -197,10 +223,44 @@
         ctx.font = 'bold 13px Arial';
         ctx.fillText('target', targetX + 8, 62);
 
-        const visualAngle = Math.max(-0.9, Math.min(0.9, Number(angle) * 25));
+        const cartWidth = 100;
+        const cartHeight = 44;
+        const cartX = cartCenterX - cartWidth / 2;
+        const cartY = trackY - cartHeight;
+
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.beginPath();
+        ctx.ellipse(cartCenterX, trackY + 22, 58, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const cartGradient = ctx.createLinearGradient(cartX, cartY, cartX, cartY + cartHeight);
+        cartGradient.addColorStop(0, '#78bdff');
+        cartGradient.addColorStop(1, '#2f6fe0');
+
+        ctx.fillStyle = cartGradient;
+        roundedRect(ctx, cartX, cartY, cartWidth, cartHeight, 13);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#e7f0ff';
+        ctx.beginPath();
+        ctx.arc(cartX + 24, trackY + 7, 8, 0, Math.PI * 2);
+        ctx.arc(cartX + cartWidth - 24, trackY + 7, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.arc(cartX + 24, trackY + 7, 3, 0, Math.PI * 2);
+        ctx.arc(cartX + cartWidth - 24, trackY + 7, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        const visualAngle = Math.max(-0.9, Math.min(0.9, angle * 25));
 
         const endX = pivotX + rodLength * Math.sin(visualAngle);
-        const endY = pivotY + rodLength * Math.cos(visualAngle);
+        const endY = pivotY - rodLength * Math.cos(visualAngle);
 
         ctx.strokeStyle = 'rgba(211,139,255,0.17)';
         ctx.lineWidth = 16;
@@ -245,76 +305,125 @@
         ctx.fillText(`position: ${position.toFixed(3)} m`, 24, 30);
         ctx.fillText(`angle: ${angle.toFixed(4)} rad`, 24, 54);
         ctx.fillText(`target: ${target.toFixed(2)} m`, 24, 78);
-        ctx.fillText(`auto zoom: ON`, 24, 102);
+        ctx.fillText(`each run starts from zero`, 24, 102);
     }
 
     async function runSimulation() {
-        if (animationId) cancelAnimationFrame(animationId);
-
-        const initPosition = Number(finalState[0]);
-
-        const payload = {
-            r: parseFloat(document.getElementById('r').value),
-            duration: parseFloat(document.getElementById('duration').value),
-            step: parseFloat(document.getElementById('step').value),
-            initPosition: Number(finalState[0]),
-            initVelocity: Number(finalState[1]),
-            initAngle: Number(finalState[2]),
-            initAngularVelocity: Number(finalState[3])
-        };
-
-        const response = await fetch('/api/animations/pendulum', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': API_KEY
-            },
-            body: JSON.stringify(payload)
-        });
-
-        const result = await response.json();
-
-        if (!result.success) {
-            alert(result.error || 'Simulation failed');
+        if (isRunning) {
             return;
         }
 
-        const data = result.data;
+        stopAnimation();
 
-        const times = data.time.map(Number);
-        const positions = data.position.map(Number);
-        const angles = data.angle.map(Number);
-        const target = Number(data.target);
+        const r = safeNumber(document.getElementById('r').value, 0.2);
+        const duration = safeNumber(document.getElementById('duration').value, 10);
+        const step = safeNumber(document.getElementById('step').value, 0.05);
 
-        finalState = data.finalState.map(Number);
-
-        chart.data.labels = times.map(t => t.toFixed(2));
-        chart.data.datasets[0].data = positions;
-        chart.data.datasets[1].data = angles;
-        chart.update();
-
-        const startTime = performance.now();
-        const durationMs = payload.duration * 1000;
-
-        function animate(now) {
-            const progress = Math.min((now - startTime) / durationMs, 1);
-
-            const index = Math.min(
-                positions.length - 1,
-                Math.floor(progress * (positions.length - 1))
-            );
-
-            drawPendulum(positions[index], angles[index], target, initPosition);
-
-            if (progress < 1) {
-                animationId = requestAnimationFrame(animate);
-            }
+        if (duration <= 0 || step <= 0) {
+            alert('Duration and step must be positive numbers.');
+            return;
         }
 
-        animationId = requestAnimationFrame(animate);
+        const initPosition = 0;
+
+        const payload = {
+            r: r,
+            duration: duration,
+            step: step,
+            initPosition: 0,
+            initVelocity: 0,
+            initAngle: 0,
+            initAngularVelocity: 0
+        };
+
+        isRunning = true;
+        runBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/animations/pendulum', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': API_KEY
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Simulation failed');
+            }
+
+            const data = result.data;
+
+            const times = data.time.map(Number);
+            const positions = data.position.map(Number);
+            const angles = data.angle.map(Number);
+            const target = Number(data.target);
+
+            chart.data.labels = times.map(t => t.toFixed(2));
+            chart.data.datasets[0].data = positions;
+            chart.data.datasets[1].data = angles;
+            chart.options.scales.y.min = Math.min(-0.1, target * 0.1);
+            chart.options.scales.y.max = Math.max(0.3, target * 1.25);
+            chart.update();
+
+            const fixedScale = calculateScale(positions, target, initPosition);
+            const startTime = performance.now();
+            const durationMs = duration * 1000;
+
+            function animate(now) {
+                const progress = Math.min((now - startTime) / durationMs, 1);
+
+                const index = Math.min(
+                    positions.length - 1,
+                    Math.floor(progress * (positions.length - 1))
+                );
+
+                drawPendulum(
+                    positions[index],
+                    angles[index],
+                    target,
+                    initPosition,
+                    fixedScale
+                );
+
+                if (progress < 1) {
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    stopAnimation();
+                    drawPendulum(
+                        positions[positions.length - 1],
+                        angles[angles.length - 1],
+                        target,
+                        initPosition,
+                        fixedScale
+                    );
+                }
+            }
+
+            animationId = requestAnimationFrame(animate);
+
+        } catch (error) {
+            stopAnimation();
+            alert(error.message);
+        }
+    }
+
+    function resetSimulation() {
+        stopAnimation();
+
+        chart.data.labels = [];
+        chart.data.datasets[0].data = [];
+        chart.data.datasets[1].data = [];
+        chart.update();
+
+        drawPendulum(0, 0, safeNumber(document.getElementById('r').value, 0.2), 0);
     }
 
     runBtn.addEventListener('click', runSimulation);
+    resetBtn.addEventListener('click', resetSimulation);
 
     drawPendulum(0, 0, 0.2, 0);
 </script>
