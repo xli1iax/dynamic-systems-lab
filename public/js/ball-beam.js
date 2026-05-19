@@ -1,11 +1,23 @@
-const API_KEY = '8d7c1f0a9b3e6d4c2f5a8e1b7c9d0f12';
+const API_KEY = window.API_KEY;
+
 console.log('ball-beam.js loaded');
+
 const form = document.getElementById('ballBeamForm');
 const canvas = document.getElementById('ballBeamCanvas');
-const ctx = canvas.getContext('2d');
-
 const chartCanvas = document.getElementById('ballBeamChart');
+
 let chart = null;
+let animationTimer = null;
+
+let scene;
+let camera;
+let renderer;
+let beam;
+let ball;
+let support;
+let floorGrid;
+
+initBallBeam3D();
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -41,8 +53,103 @@ form.addEventListener('submit', async (event) => {
     const data = json.data;
 
     drawChart(data);
-    animateBallBeam(data);
+    animateBallBeam3D(data);
 });
+
+function initBallBeam3D() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x162334);
+
+    const width = canvas.clientWidth || canvas.width;
+    const height = canvas.clientHeight || canvas.height;
+
+    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(0, 4.5, 8);
+    camera.lookAt(0, 0, 0);
+
+    renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: false
+    });
+
+    renderer.setSize(width, height, false);
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    directionalLight.position.set(4, 7, 5);
+    scene.add(directionalLight);
+
+    const backLight = new THREE.DirectionalLight(0x8bbcff, 0.6);
+    backLight.position.set(-4, 3, -4);
+    scene.add(backLight);
+
+    beam = new THREE.Mesh(
+        new THREE.BoxGeometry(6.5, 0.16, 0.34),
+        new THREE.MeshStandardMaterial({
+            color: 0xe8f1ff,
+            roughness: 0.35,
+            metalness: 0.08
+        })
+    );
+    beam.position.y = 0;
+    scene.add(beam);
+
+    ball = new THREE.Mesh(
+        new THREE.SphereGeometry(0.28, 48, 48),
+        new THREE.MeshStandardMaterial({
+            color: 0x5ea8ff,
+            roughness: 0.25,
+            metalness: 0.2
+        })
+    );
+    scene.add(ball);
+
+    support = new THREE.Mesh(
+        new THREE.ConeGeometry(0.55, 1.2, 4),
+        new THREE.MeshStandardMaterial({
+            color: 0xd9dde4,
+            roughness: 0.45
+        })
+    );
+    support.position.y = -0.7;
+    support.rotation.y = Math.PI / 4;
+    scene.add(support);
+
+    const floorGeometry = new THREE.PlaneGeometry(8, 3);
+    const floorMaterial = new THREE.MeshStandardMaterial({
+        color: 0x0f1b2a,
+        roughness: 0.8,
+        metalness: 0.05
+    });
+
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -1.35;
+    scene.add(floor);
+
+    floorGrid = new THREE.GridHelper(8, 16, 0x5b6f86, 0x2f4055);
+    floorGrid.position.y = -1.33;
+    scene.add(floorGrid);
+
+    render3D();
+
+    window.addEventListener('resize', resize3D);
+}
+
+function resize3D() {
+    const width = canvas.clientWidth || canvas.width;
+    const height = canvas.clientHeight || canvas.height;
+
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(width, height, false);
+    render3D();
+}
 
 function drawChart(data) {
     if (chart) {
@@ -89,8 +196,13 @@ function drawChart(data) {
     });
 }
 
-function animateBallBeam(data) {
+function animateBallBeam3D(data) {
+    if (animationTimer) {
+        clearTimeout(animationTimer);
+    }
+
     let index = 0;
+    const stepMs = Math.max((data.time[1] - data.time[0]) * 1000, 16);
 
     function frame() {
         if (index >= data.time.length) {
@@ -100,56 +212,37 @@ function animateBallBeam(data) {
         const position = data.position[index];
         const angle = data.angle[index];
 
-        drawScene(position, angle);
+        drawScene3D(position, angle, data.target);
 
         index++;
-        requestAnimationFrame(frame);
+        animationTimer = setTimeout(frame, stepMs);
     }
 
     frame();
 }
 
-function drawScene(position, angle) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawScene3D(position, angle, target = 0.25) {
+    const visualScale = 12000;
+    const maxVisualAngle = 0.38;
 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    let visualAngle = angle * visualScale;
+    visualAngle = Math.max(-maxVisualAngle, Math.min(maxVisualAngle, visualAngle));
 
-    const beamLength = 500;
+    beam.rotation.z = visualAngle;
 
-    ctx.save();
+    const safeTarget = target || 0.25;
+    let ballX = (position / safeTarget) * 2.2;
+    ballX = Math.max(-2.9, Math.min(2.9, ballX));
 
-    ctx.translate(centerX, centerY);
+    const ballY = ballX * Math.sin(visualAngle) + 0.38;
+    const rotatedX = ballX * Math.cos(visualAngle);
 
-    // масштабируем угол
-    ctx.rotate(angle * 20);
+    ball.position.set(rotatedX, ballY, 0);
+    ball.rotation.z -= 0.08;
 
-    // балка
-    ctx.strokeStyle = '#111';
-    ctx.lineWidth = 14;
-    ctx.lineCap = 'round';
+    render3D();
+}
 
-    ctx.beginPath();
-    ctx.moveTo(-beamLength / 2, 0);
-    ctx.lineTo(beamLength / 2, 0);
-    ctx.stroke();
-
-    const normalizedPosition = position * 700 - 180;
-
-    ctx.fillStyle = '#2563eb';
-
-    ctx.beginPath();
-    ctx.arc(normalizedPosition, -20, 24, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-
-    ctx.fillStyle = '#444';
-
-    ctx.beginPath();
-    ctx.moveTo(centerX - 40, centerY + 70);
-    ctx.lineTo(centerX + 40, centerY + 70);
-    ctx.lineTo(centerX, centerY + 10);
-    ctx.closePath();
-    ctx.fill();
+function render3D() {
+    renderer.render(scene, camera);
 }

@@ -386,4 +386,125 @@ body::before {
         margin-bottom: 40px;
     }
 }
+.simulation-page {
+    min-height: 100vh;
+    padding: 40px;
+}
 
+
+.simulation-shell {
+    max-width: 1450px;
+    margin: 0 auto;
+}
+
+.simulation-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.simulation-header h1 {
+    font-size: 3rem;
+    margin-bottom: 12px;
+}
+
+.simulation-header p {
+    color: rgba(230,240,255,0.7);
+}
+
+.back-btn {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #8fc8ff;
+    text-decoration: none;
+}
+
+.simulation-controls {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    padding: 24px;
+    border-radius: 24px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group input {
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    min-width: 150px;
+}
+
+#runBtn {
+    padding: 14px 24px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: bold;
+    background: linear-gradient(135deg, #5ea8ff, #b27cff);
+    color: white;
+}
+
+.simulation-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.simulation-card {
+    padding: 24px;
+    border-radius: 24px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+}
+
+.simulation-card canvas {
+    width: 100%;
+}
+
+@media (max-width: 1000px) {
+    .simulation-layout {
+        grid-template-columns: 1fr;
+    }
+}
+#ballBeamCanvas {
+    width: 100%;
+    height: 430px;
+    display: block;
+    border-radius: 22px;
+    background: #162334;
+}
+.language-switcher {
+    position: fixed;
+    top: 22px;
+    right: 28px;
+    z-index: 100;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    backdrop-filter: blur(12px);
+}
+
+.language-switcher a {
+    color: #9fc7ff;
+    text-decoration: none;
+    font-weight: 700;
+    margin: 0 6px;
+}
+
+.language-switcher a:hover {
+    color: white;
+}
+
+.language-switcher span {
+    color: rgba(255,255,255,0.4);
+}

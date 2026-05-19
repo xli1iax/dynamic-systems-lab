@@ -1,69 +1,87 @@
 <!DOCTYPE html>
-<html lang="sk">
+<html lang="<?= htmlspecialchars(getLang()) ?>">
 <head>
     <meta charset="UTF-8">
-    <title>Ball Beam Animation</title>
+    <title><?= t('ball_beam') ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<main class="page">
-    <section class="card">
-        <h1>Gulička na tyči</h1>
-        <p>Animácia dynamického systému s grafom polohy a uhla naklonenia tyče.</p>
+<nav class="language-switcher">
+    <a href="<?= langUrl('sk') ?>">SK</a>
+    <span>|</span>
+    <a href="<?= langUrl('en') ?>">EN</a>
+</nav>
 
-        <form id="ballBeamForm" class="form">
-            <label>
-                Cieľová pozícia r
-                <input type="number" step="0.01" name="r" value="0.25">
-            </label>
+<main class="simulation-page">
+    <div class="simulation-shell">
 
-            <label>
-                Trvanie simulácie
-                <input type="number" step="0.1" name="duration" value="5">
-            </label>
+        <div class="simulation-header">
+            <a href="/" class="back-btn"><?= t('back_dashboard') ?></a>
+            <h1><?= t('ball_beam') ?></h1>
+            <p><?= t('ball_beam_page_description') ?></p>
+        </div>
 
-            <label>
-                Krok simulácie
-                <input type="number" step="0.005" name="step" value="0.01">
-            </label>
+        <form id="ballBeamForm" class="simulation-controls">
+            <div class="input-group">
+                <label for="r"><?= t('target_position_r') ?></label>
+                <input type="number" id="r" name="r" step="0.01" value="0.25">
+            </div>
 
-            <label>
-                Počiatočná pozícia
-                <input type="number" step="0.01" name="initPosition" value="0">
-            </label>
+            <div class="input-group">
+                <label for="duration"><?= t('simulation_duration') ?></label>
+                <input type="number" id="duration" name="duration" step="0.1" value="5">
+            </div>
 
-            <label>
-                Počiatočná rýchlosť
-                <input type="number" step="0.01" name="initVelocity" value="0">
-            </label>
+            <div class="input-group">
+                <label for="step"><?= t('simulation_step') ?></label>
+                <input type="number" id="step" name="step" step="0.005" value="0.01">
+            </div>
 
-            <label>
-                Počiatočný uhol
-                <input type="number" step="0.01" name="initAngle" value="0">
-            </label>
+            <div class="input-group">
+                <label for="initPosition"><?= t('initial_position') ?></label>
+                <input type="number" id="initPosition" name="initPosition" step="0.01" value="0">
+            </div>
 
-            <label>
-                Počiatočná uhlová rýchlosť
-                <input type="number" step="0.01" name="initAngularVelocity" value="0">
-            </label>
+            <div class="input-group">
+                <label for="initVelocity"><?= t('initial_velocity') ?></label>
+                <input type="number" id="initVelocity" name="initVelocity" step="0.01" value="0">
+            </div>
 
-            <button type="submit">Spustiť animáciu</button>
+            <div class="input-group">
+                <label for="initAngle"><?= t('initial_angle') ?></label>
+                <input type="number" id="initAngle" name="initAngle" step="0.01" value="0">
+            </div>
+
+            <div class="input-group">
+                <label for="initAngularVelocity"><?= t('initial_angular_velocity') ?></label>
+                <input type="number" id="initAngularVelocity" name="initAngularVelocity" step="0.01" value="0">
+            </div>
+
+            <button type="submit" id="runBtn"><?= t('run_simulation') ?></button>
         </form>
-    </section>
 
-    <section class="card">
-        <h2>Animácia</h2>
-        <canvas id="ballBeamCanvas" width="1000" height="500"></canvas>
-    </section>
+        <section class="simulation-layout">
+            <div class="simulation-card">
+                <h2><?= t('animation') ?></h2>
+                <canvas id="ballBeamCanvas" width="1000" height="500"></canvas>
+            </div>
 
-    <section class="card">
-        <h2>Graf</h2>
-        <canvas id="ballBeamChart"></canvas>
-    </section>
+            <div class="simulation-card">
+                <h2><?= t('graph') ?></h2>
+                <canvas id="ballBeamChart"></canvas>
+            </div>
+        </section>
+
+    </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    window.API_KEY = <?= json_encode(getApiKey()) ?>;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="/js/ball-beam.js"></script>
 </body>
 </html>
