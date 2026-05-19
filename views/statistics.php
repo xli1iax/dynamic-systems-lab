@@ -73,15 +73,19 @@
 
     async function loadStatistics() {
 
-        const container = document.getElementById('statisticsList');
+        const container =
+            document.getElementById('statisticsList');
 
         try {
 
-            const response = await fetch('/api/statistics/animations', {
-                headers: {
-                    'X-API-KEY': window.API_KEY
+            const response = await fetch(
+                '/api/statistics/animations',
+                {
+                    headers: {
+                        'X-API-KEY': window.API_KEY
+                    }
                 }
-            });
+            );
 
             const json = await response.json();
 
@@ -89,19 +93,15 @@
 
             container.innerHTML = '';
 
-            const usageMap = {
-                'Ball & Beam': 0,
-                'Inverted Pendulum': 0
-            };
+            const usageLabels = [];
+            const usageCounts = [];
 
             const allDetails = [];
 
             for (const animation of animations) {
 
                 const rawName =
-                    animation.animation_name ??
-                    animation.name ??
-                    'unknown';
+                    animation.animation_name;
 
                 const animationName =
                     rawName === 'ball_beam'
@@ -109,13 +109,6 @@
                         : rawName === 'inverted_pendulum'
                             ? 'Inverted Pendulum'
                             : rawName;
-
-                const count =
-                    animation.total_count ??
-                    animation.count ??
-                    0;
-
-                usageMap[animationName] = count;
 
                 const detailResponse = await fetch(
                     '/api/statistics/animations/' + rawName,
@@ -126,62 +119,67 @@
                     }
                 );
 
-                const detailJson = await detailResponse.json();
+                const detailJson =
+                    await detailResponse.json();
 
-                const details = detailJson.data ?? [];
+                const details =
+                    detailJson.data ?? [];
 
                 allDetails.push(...details);
+
+                usageLabels.push(animationName);
+                usageCounts.push(details.length);
 
                 const card = document.createElement('div');
 
                 card.className = 'statistics-card';
 
                 card.innerHTML = `
-                    <div class="statistics-top">
+                <div class="statistics-top">
 
-                        <div>
-                            <h2>${animationName}</h2>
-                            <p>${count} uses</p>
-                        </div>
-
-                        <button class="details-btn">
-                            Details
-                        </button>
-
+                    <div>
+                        <h2>${animationName}</h2>
+                        <p>${details.length} uses</p>
                     </div>
 
-                    <div class="statistics-details hidden">
+                    <button class="details-btn">
+                        Details
+                    </button>
 
-                        ${
+                </div>
+
+                <div class="statistics-details hidden">
+
+                    ${
                     details.length === 0
                         ? `
-                                    <div class="statistics-row">
-                                        No details available
-                                    </div>
-                                `
+                                <div class="statistics-row">
+                                    No details available
+                                </div>
+                            `
                         : details.map(item => `
 
-                                    <div class="statistics-row">
+                                <div class="statistics-row">
 
-                                        <div class="stat-chip">
-                                            📅 ${item.created_at ?? item.used_at ?? '-'}
-                                        </div>
-
-                                        <div class="stat-chip">
-                                            🌍 ${item.city ?? 'Unknown city'}
-                                        </div>
-
-                                        <div class="stat-chip">
-                                            🏳️ ${item.country ?? item.state ?? 'Unknown country'}
-                                        </div>
-
+                                    <div class="stat-chip">
+                                        📅 ${item.used_at ?? '-'}
                                     </div>
 
-                                `).join('')
+                                    <div class="stat-chip">
+                                        🌍 ${item.city ?? 'Unknown city'}
+                                    </div>
+
+                                    <div class="stat-chip">
+                                        🏳️ ${item.country ?? 'Unknown country'}
+                                    </div>
+
+                                </div>
+
+                            `).join('')
                 }
 
-                    </div>
-                `;
+                </div>
+            `;
 
                 const detailsBtn =
                     card.querySelector('.details-btn');
@@ -197,21 +195,21 @@
             }
 
             drawUsageChart(
-                Object.keys(usageMap),
-                Object.values(usageMap)
+                usageLabels,
+                usageCounts
             );
 
             drawCountryChart(allDetails);
-
+            console.log('ALL DETAILS:', allDetails);
             drawTimeChart(allDetails);
 
         } catch (error) {
 
             container.innerHTML = `
-                <div class="error-box">
-                    ${error.message}
-                </div>
-            `;
+            <div class="error-box">
+                ${error.message}
+            </div>
+        `;
         }
     }
 
@@ -339,63 +337,43 @@
     }
 
     function drawTimeChart(details) {
-
         const timeCounts = {};
 
         details.forEach(item => {
-
-            const rawDate =
-                item.created_at ??
-                item.used_at;
+            const rawDate = item.used_at ?? item.created_at;
 
             if (!rawDate) {
                 return;
             }
 
-            const date =
-                rawDate.split(' ')[0];
+            const date = rawDate.split(' ')[0];
 
-            timeCounts[date] =
-                (timeCounts[date] ?? 0) + 1;
+            timeCounts[date] = (timeCounts[date] ?? 0) + 1;
         });
 
-        const labels =
-            Object.keys(timeCounts).sort();
+        const labels = Object.keys(timeCounts).sort();
+        const counts = labels.map(label => timeCounts[label]);
 
-        const counts =
-            labels.map(label => timeCounts[label]);
-
-        const ctx =
-            document.getElementById('timeChart');
+        const ctx = document.getElementById('timeChart');
 
         if (timeChart) {
             timeChart.destroy();
         }
 
         timeChart = new Chart(ctx, {
-
             type: 'line',
-
             data: {
-                labels: labels.length
-                    ? labels
-                    : ['No data'],
-
+                labels: labels.length ? labels : ['No data'],
                 datasets: [{
                     label: 'Usage over time',
-                    data: counts.length
-                        ? counts
-                        : [0],
-
+                    data: counts.length ? counts : [0],
                     borderWidth: 3,
                     tension: 0.35,
                     pointRadius: 5
                 }]
             },
-
             options: {
                 responsive: true,
-
                 plugins: {
                     legend: {
                         labels: {
@@ -403,30 +381,18 @@
                         }
                     }
                 },
-
                 scales: {
-
                     x: {
-                        ticks: {
-                            color: '#dce7ff'
-                        },
-
-                        grid: {
-                            color: 'rgba(255,255,255,0.08)'
-                        }
+                        ticks: { color: '#dce7ff' },
+                        grid: { color: 'rgba(255,255,255,0.08)' }
                     },
-
                     y: {
                         beginAtZero: true,
-
                         ticks: {
                             color: '#dce7ff',
                             precision: 0
                         },
-
-                        grid: {
-                            color: 'rgba(255,255,255,0.08)'
-                        }
+                        grid: { color: 'rgba(255,255,255,0.08)' }
                     }
                 }
             }
