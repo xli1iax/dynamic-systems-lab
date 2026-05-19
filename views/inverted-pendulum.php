@@ -5,7 +5,7 @@
     <title>Inverzné kyvadlo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.js"></script>
 </head>
 <body>
 
@@ -305,7 +305,7 @@
         ctx.fillText(`position: ${position.toFixed(3)} m`, 24, 30);
         ctx.fillText(`angle: ${angle.toFixed(4)} rad`, 24, 54);
         ctx.fillText(`target: ${target.toFixed(2)} m`, 24, 78);
-        ctx.fillText(`each run starts from zero`, 24, 102);
+
     }
 
     async function runSimulation() {
