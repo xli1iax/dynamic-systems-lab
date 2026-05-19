@@ -11,6 +11,10 @@ use App\Services\DatabaseService;
 use App\Services\LogService;
 use App\Services\OctaveService;
 use Slim\Factory\AppFactory;
+use App\Services\AnimationUsageService;
+
+use App\Controllers\AnimationStatisticsController;
+use App\Services\AnimationStatisticsService;
 
 require __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/config.php';
@@ -35,7 +39,15 @@ $casController = new CasController($octaveService, $logService);
 
 
 $animationService = new AnimationService($octaveService);
-$animationController = new AnimationController($animationService, $logService);
+$animationUsageService = new AnimationUsageService($pdo);
+$animationController = new AnimationController(
+    $animationService,
+    $logService,
+    $animationUsageService
+);
+
+$animationStatisticsService = new AnimationStatisticsService($pdo);
+$animationStatisticsController = new AnimationStatisticsController($animationStatisticsService);
 
 $app->post('/api/animations/pendulum', [$animationController, 'invertedPendulum'])
     ->add(new ApiKeyMiddleware());
@@ -52,5 +64,11 @@ $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', [$homeController, 'index']);
 $app->post('/api/logs/export', [$logController, 'export']);
+
+$app->get('/api/statistics/animations', [$animationStatisticsController, 'summary'])
+    ->add(new ApiKeyMiddleware());
+
+$app->get('/api/statistics/animations/{name}', [$animationStatisticsController, 'details'])
+    ->add(new ApiKeyMiddleware());
 
 $app->run();
