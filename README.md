@@ -67,6 +67,7 @@ storage/logs/
 
 ```bash
 composer require slim/slim slim/psr7 symfony/process monolog/monolog vlucas/phpdotenv
+composer require zircote/swagger-php 
 ```
 
 ---
@@ -347,13 +348,83 @@ The frontend can use:
 
 ### 4. Logs export
 
-```text
-POST /api/logs/export
-```
 
-This endpoint is prepared for exporting stored CAS/API request logs.
+
+
+### Additional Backend Endpoints
+
+Implemented REST API endpoints for logs and animation statistics.
+
+#### CAS Request Logs
+Added endpoints for accessing and exporting logged CAS requests:
+
+- `GET /api/logs`  
+  Returns all stored CAS request logs in JSON format, including:
+    - request source
+    - executed command
+    - calculation result
+    - success/error status
+    - error message
+    - IP address
+    - timestamp
+
+- `GET /api/logs/export`  
+  Exports all stored CAS logs as a downloadable CSV file.
 
 ---
+
+#### Animation Usage Statistics
+Implemented endpoints for monitoring animation usage statistics.
+
+- `GET /api/statistics/animations`  
+  Returns summary statistics showing how many times each animation was used.
+
+  Example response:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "animation_name": "inverted_pendulum",
+        "total_uses": 1
+      }
+    ]
+  }
+``
+
+* `GET /api/statistics/animations/{name}`
+  Returns detailed usage records for a selected animation.
+
+  Returned data includes:
+
+    * anonymous user token
+    * city
+    * country
+    * timestamp of usage
+
+Example:
+
+```json
+{
+  "success": true,
+  "animation": "inverted_pendulum",
+  "data": [
+    {
+      "animation_name": "inverted_pendulum",
+      "user_token": "...",
+      "city": null,
+      "country": null,
+      "used_at": "2026-05-19 13:08:11"
+    }
+  ]
+}
+```
+
+These endpoints are protected using API key authentication.
+
+
+
+
 
 ## CAS and animation architecture
 
@@ -587,3 +658,5 @@ Swagger documentation supports:
 - API key authentication
 - request/response schema visualization
 - grouped endpoint organization
+
+  
