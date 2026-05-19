@@ -12,6 +12,7 @@ use App\Services\LogService;
 use App\Services\OctaveService;
 use Slim\Factory\AppFactory;
 use App\Services\AnimationUsageService;
+use App\Controllers\DocumentationController;
 
 use App\Controllers\AnimationStatisticsController;
 use App\Services\AnimationStatisticsService;
@@ -24,6 +25,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $app = AppFactory::create();
+$documentationController = new DocumentationController();
 
 $pdo = connectDatabase();
 
@@ -120,14 +122,14 @@ $app->get('/', [$homeController, 'index']);
 $app->get('/api/logs', [$logController, 'index'])
     ->add(new ApiKeyMiddleware());
 
-$app->get('/api/logs/export', [$logController, 'export'])
-    ->add(new ApiKeyMiddleware());
+$app->get('/api/logs/export', [$logController, 'export']);
 
 $app->get('/api/statistics/animations', [$animationStatisticsController, 'summary'])
     ->add(new ApiKeyMiddleware());
 
 $app->get('/api/statistics/animations/{name}', [$animationStatisticsController, 'details'])
     ->add(new ApiKeyMiddleware());
+$app->get('/documentation', [$documentationController, 'pdf']);
 
 
 $app->run();
