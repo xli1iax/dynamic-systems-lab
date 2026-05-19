@@ -15,5 +15,16 @@ class HomeController
 
         $response->getBody()->write($html);
         return $response;
+
+    }
+    public function ballBeam(Request $request, Response $response): Response
+    {
+        ob_start();
+        require __DIR__ . '/../../views/ball-beam.php';
+        $html = ob_get_clean();
+
+        $response->getBody()->write($html);
+
+        return $response;
     }
 }
