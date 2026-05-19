@@ -63,7 +63,11 @@ $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', [$homeController, 'index']);
-$app->post('/api/logs/export', [$logController, 'export']);
+$app->get('/api/logs', [$logController, 'index'])
+    ->add(new ApiKeyMiddleware());
+
+$app->get('/api/logs/export', [$logController, 'export'])
+    ->add(new ApiKeyMiddleware());
 
 $app->get('/api/statistics/animations', [$animationStatisticsController, 'summary'])
     ->add(new ApiKeyMiddleware());
