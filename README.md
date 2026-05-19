@@ -553,3 +553,37 @@ Still to implement:
 * animation usage statistics;
 * final video.
 
+## Implemented Features
+
+### Main Dashboard
+Implemented a responsive homepage dashboard that serves as the central navigation point of the application.  
+The homepage provides access to all major system modules, including:
+
+- CAS manual command execution
+- Dynamic system simulations
+- Animation statistics
+- CAS request logs with export
+- OpenAPI API documentation
+- PDF documentation section
+
+The interface was designed as a clean dashboard layout for easier navigation between project functionalities.
+
+### OpenAPI Documentation
+Implemented interactive API documentation using Swagger UI and OpenAPI 3.0.
+
+Documented backend endpoints include:
+
+- `POST /api/cas/execute` — execute CAS/Octave commands
+- `POST /api/animations/pendulum` — inverted pendulum simulation
+- `POST /api/animations/ball-beam` — ball and beam simulation
+- `GET /api/statistics/animations` — animation usage summary
+- `GET /api/statistics/animations/{name}` — animation usage details
+- `GET /api/logs` — retrieve CAS request logs
+- `GET /api/logs/export` — export logs as CSV
+
+Swagger documentation supports:
+
+- interactive endpoint testing
+- API key authentication
+- request/response schema visualization
+- grouped endpoint organization

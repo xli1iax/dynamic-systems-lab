@@ -58,17 +58,29 @@ $app->post('/api/animations/ball-beam', [$animationController, 'ballBeam'])
 $app->post('/api/cas/execute', [$casController, 'execute'])
     ->add(new ApiKeyMiddleware());
 
+$app->get('/docs', function ($request, $response) {
+    ob_start();
+    require __DIR__ . '/../views/api-docs.php';
+    $html = ob_get_clean();
 
+    $response->getBody()->write($html);
+    return $response;
+});
 $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', [$homeController, 'index']);
-$app->post('/api/logs/export', [$logController, 'export']);
+$app->get('/api/logs', [$logController, 'index'])
+    ->add(new ApiKeyMiddleware());
+
+$app->get('/api/logs/export', [$logController, 'export'])
+    ->add(new ApiKeyMiddleware());
 
 $app->get('/api/statistics/animations', [$animationStatisticsController, 'summary'])
     ->add(new ApiKeyMiddleware());
 
 $app->get('/api/statistics/animations/{name}', [$animationStatisticsController, 'details'])
     ->add(new ApiKeyMiddleware());
+
 
 $app->run();

@@ -1,0 +1,606 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Dynamic Systems API",
+    "version": "1.0.0",
+    "description": "REST API for CAS calculations, dynamic system simulations, animation statistics and CAS request logs."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local Docker environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "CAS",
+      "description": "Manual CAS command execution"
+    },
+    {
+      "name": "Animations",
+      "description": "Dynamic system simulation endpoints"
+    },
+    {
+      "name": "Statistics",
+      "description": "Animation usage statistics"
+    },
+    {
+      "name": "Logs",
+      "description": "CAS request logs and CSV export"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY",
+        "description": "API key required for protected endpoints."
+      }
+    },
+    "schemas": {
+      "CasExecuteRequest": {
+        "type": "object",
+        "required": ["command"],
+        "properties": {
+          "command": {
+            "type": "string",
+            "example": "a=1+1"
+          },
+          "source": {
+            "type": "string",
+            "example": "form"
+          }
+        }
+      },
+      "CasExecuteResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "result": {
+            "oneOf": [
+              { "type": "number" },
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "number" }
+              }
+            ],
+            "example": 2
+          }
+        }
+      },
+      "AnimationRequest": {
+        "type": "object",
+        "properties": {
+          "r": {
+            "type": "number",
+            "example": 0.2
+          },
+          "duration": {
+            "type": "number",
+            "example": 10
+          },
+          "step": {
+            "type": "number",
+            "example": 0.05
+          },
+          "initPosition": {
+            "type": "number",
+            "example": 0
+          },
+          "initVelocity": {
+            "type": "number",
+            "example": 0
+          },
+          "initAngle": {
+            "type": "number",
+            "example": 0
+          },
+          "initAngularVelocity": {
+            "type": "number",
+            "example": 0
+          }
+        }
+      },
+      "AnimationData": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "array",
+            "items": { "type": "number" },
+            "example": [0, 0.05, 0.1]
+          },
+          "position": {
+            "type": "array",
+            "items": { "type": "number" },
+            "example": [0, 0.001, 0.003]
+          },
+          "angle": {
+            "type": "array",
+            "items": { "type": "number" },
+            "example": [0, -0.001, -0.002]
+          },
+          "state": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "type": "number" }
+            }
+          },
+          "finalState": {
+            "type": "array",
+            "items": { "type": "number" },
+            "example": [0.1, 0.2, 0.01, 0.02]
+          },
+          "target": {
+            "type": "number",
+            "example": 0.2
+          }
+        }
+      },
+      "AnimationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "animation": {
+            "type": "string",
+            "example": "inverted_pendulum"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AnimationData"
+          }
+        }
+      },
+      "AnimationStatisticSummaryItem": {
+        "type": "object",
+        "properties": {
+          "animation_name": {
+            "type": "string",
+            "example": "inverted_pendulum"
+          },
+          "total_uses": {
+            "type": "integer",
+            "example": 5
+          }
+        }
+      },
+      "AnimationStatisticDetailItem": {
+        "type": "object",
+        "properties": {
+          "animation_name": {
+            "type": "string",
+            "example": "inverted_pendulum"
+          },
+          "user_token": {
+            "type": "string",
+            "example": "61482c49352e66b9a8c07ff9c2b89919d534b1b028c1ee16d..."
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "example": "Bratislava"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true,
+            "example": "Slovakia"
+          },
+          "used_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-05-19 13:08:11"
+          }
+        }
+      },
+      "LogItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "source": {
+            "type": "string",
+            "example": "animation"
+          },
+          "command": {
+            "type": "string",
+            "example": "inverted_pendulum: {\"r\":0.2,\"duration\":10}"
+          },
+          "result": {
+            "type": "string",
+            "nullable": true
+          },
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "error_message": {
+            "type": "string",
+            "nullable": true
+          },
+          "ip_address": {
+            "type": "string",
+            "nullable": true,
+            "example": "192.168.65.1"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-05-19 13:08:11"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string",
+            "example": "Invalid animation parameters."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/api/cas/execute": {
+      "post": {
+        "tags": ["CAS"],
+        "summary": "Execute CAS command",
+        "description": "Executes a custom Octave/CAS command. The endpoint supports session-based helper variables, for example `a=1+1` and then `a+2`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CasExecuteRequest"
+              },
+              "examples": {
+                "arithmetic": {
+                  "summary": "Simple arithmetic",
+                  "value": {
+                    "command": "2+2",
+                    "source": "form"
+                  }
+                },
+                "variable": {
+                  "summary": "Variable assignment",
+                  "value": {
+                    "command": "a=1+1",
+                    "source": "form"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "CAS command executed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasExecuteResponse"
+                },
+                "example": {
+                  "success": true,
+                  "result": 4
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key"
+          },
+          "500": {
+            "description": "CAS execution error"
+          }
+        }
+      }
+    },
+    "/api/animations/pendulum": {
+      "post": {
+        "tags": ["Animations"],
+        "summary": "Run inverted pendulum simulation",
+        "description": "Calculates data for the inverted pendulum animation and synchronized graph.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationRequest"
+              },
+              "example": {
+                "r": 0.2,
+                "duration": 10,
+                "step": 0.05,
+                "initPosition": 0,
+                "initVelocity": 0,
+                "initAngle": 0,
+                "initAngularVelocity": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulation data generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnimationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid animation parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key"
+          },
+          "500": {
+            "description": "Simulation error"
+          }
+        }
+      }
+    },
+    "/api/animations/ball-beam": {
+      "post": {
+        "tags": ["Animations"],
+        "summary": "Run ball and beam simulation",
+        "description": "Calculates data for the ball and beam animation and synchronized graph.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationRequest"
+              },
+              "example": {
+                "r": 0.25,
+                "duration": 5,
+                "step": 0.01,
+                "initPosition": 0,
+                "initVelocity": 0,
+                "initAngle": 0,
+                "initAngularVelocity": 0
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulation data generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnimationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid animation parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key"
+          },
+          "500": {
+            "description": "Simulation error"
+          }
+        }
+      }
+    },
+    "/api/statistics/animations": {
+      "get": {
+        "tags": ["Statistics"],
+        "summary": "Get animation usage summary",
+        "description": "Returns how many times each animation was counted in the usage statistics.",
+        "responses": {
+          "200": {
+            "description": "Animation statistics summary",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "animation_name": "inverted_pendulum",
+                      "total_uses": 3
+                    },
+                    {
+                      "animation_name": "ball_beam",
+                      "total_uses": 2
+                    }
+                  ]
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AnimationStatisticSummaryItem"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key"
+          }
+        }
+      }
+    },
+    "/api/statistics/animations/{name}": {
+      "get": {
+        "tags": ["Statistics"],
+        "summary": "Get animation usage details",
+        "description": "Returns detailed anonymous usage records for a selected animation.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "Animation name",
+            "schema": {
+              "type": "string",
+              "enum": ["inverted_pendulum", "ball_beam"]
+            },
+            "example": "inverted_pendulum"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Animation usage details",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "animation": "inverted_pendulum",
+                  "data": [
+                    {
+                      "animation_name": "inverted_pendulum",
+                      "user_token": "61482c49352e66b9a8c07ff9c2b89919d534b1b028c1ee16d...",
+                      "city": "Bratislava",
+                      "country": "Slovakia",
+                      "used_at": "2026-05-19 13:08:11"
+                    }
+                  ]
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "animation": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AnimationStatisticDetailItem"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key"
+          }
+        }
+      }
+    },
+    "/api/logs": {
+      "get": {
+        "tags": ["Logs"],
+        "summary": "Get CAS request logs",
+        "description": "Returns all stored CAS/API request logs as JSON. These logs can be displayed in the frontend table.",
+        "responses": {
+          "200": {
+            "description": "Logs loaded successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": 1,
+                      "source": "animation",
+                      "command": "inverted_pendulum: {\"r\":0.2}",
+                      "result": "{...}",
+                      "success": true,
+                      "error_message": null,
+                      "ip_address": "192.168.65.1",
+                      "created_at": "2026-05-19 13:08:11"
+                    }
+                  ]
+                },
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LogItem"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key"
+          }
+        }
+      }
+    },
+    "/api/logs/export": {
+      "get": {
+        "tags": ["Logs"],
+        "summary": "Export CAS request logs to CSV",
+        "description": "Downloads all stored CAS/API request logs as a CSV file.",
+        "responses": {
+          "200": {
+            "description": "CSV file with request logs",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                },
+                "example": "id,source,command,result,success,error_message,ip_address,created_at\n1,animation,\"inverted_pendulum: {...}\",\"{...}\",1,,192.168.65.1,\"2026-05-19 13:08:11\""
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key"
+          }
+        }
+      }
+    }
+  }
+}
