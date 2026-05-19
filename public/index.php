@@ -48,6 +48,7 @@ $app->addRoutingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', [$homeController, 'index']);
+$app->get('/ball-beam', [$homeController, 'ballBeam']);
 $app->post('/api/logs/export', [$logController, 'export']);
 
 $app->run();

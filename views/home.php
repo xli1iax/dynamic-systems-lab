@@ -2,68 +2,40 @@
 <html lang="sk">
 <head>
     <meta charset="UTF-8">
-    <title>Ball Beam Animation</title>
+    <title>Dynamic Systems Lab</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
 <main class="page">
     <section class="card">
-        <h1>Gulička na tyči</h1>
-        <p>Animácia dynamického systému s grafom polohy a uhla naklonenia tyče.</p>
+        <h1>Dynamic Systems Lab</h1>
 
-        <form id="ballBeamForm" class="form">
-            <label>
-                Cieľová pozícia r
-                <input type="number" step="0.01" name="r" value="0.25">
-            </label>
+        <p>
+            Simulácie dynamických systémov pomocou Octave REST API.
+        </p>
 
-            <label>
-                Trvanie simulácie
-                <input type="number" step="0.1" name="duration" value="5">
-            </label>
+        <div class="menu-grid">
+            <a class="menu-card" href="/ball-beam">
+                <h2>Gulička na tyči</h2>
+                <p>Animácia + graf</p>
+            </a>
 
-            <label>
-                Krok simulácie
-                <input type="number" step="0.005" name="step" value="0.01">
-            </label>
+            <a class="menu-card" href="/inverted-pendulum">
+                <h2>Prevrátené kyvadlo</h2>
+                <p>Animácia + graf</p>
+            </a>
 
-            <label>
-                Počiatočná pozícia
-                <input type="number" step="0.01" name="initPosition" value="0">
-            </label>
+            <a class="menu-card" href="/docs">
+                <h2>API dokumentácia</h2>
+            </a>
 
-            <label>
-                Počiatočná rýchlosť
-                <input type="number" step="0.01" name="initVelocity" value="0">
-            </label>
-
-            <label>
-                Počiatočný uhol
-                <input type="number" step="0.01" name="initAngle" value="0">
-            </label>
-
-            <label>
-                Počiatočná uhlová rýchlosť
-                <input type="number" step="0.01" name="initAngularVelocity" value="0">
-            </label>
-
-            <button type="submit">Spustiť animáciu</button>
-        </form>
-    </section>
-
-    <section class="card">
-        <h2>Animácia</h2>
-        <canvas id="ballBeamCanvas" width="1000" height="500"></canvas>
-    </section>
-
-    <section class="card">
-        <h2>Graf</h2>
-        <canvas id="ballBeamChart"></canvas>
+            <a class="menu-card" href="/stats">
+                <h2>Štatistiky</h2>
+            </a>
+        </div>
     </section>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/js/ball-beam.js"></script>
 </body>
 </html>
