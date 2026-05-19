@@ -37,3 +37,8 @@ function getCasDelayMs(): int
 {
     return (int) ($_ENV['CAS_DELAY_MS'] ?? 0);
 }
+
+function getAnimationStatsIntervalMinutes(): int
+{
+    return (int) ($_ENV['ANIMATION_STATS_INTERVAL_MINUTES'] ?? 10);
+}

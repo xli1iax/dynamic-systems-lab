@@ -2,36 +2,108 @@
 <html lang="sk">
 <head>
     <meta charset="UTF-8">
-    <title>Dynamic Systems Lab</title>
+    <title>Dynamic System Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
-<main class="page">
-    <section class="card">
-        <h1>Dynamic Systems Lab</h1>
+<main class="home-page">
+    <section class="hero">
+        <div class="hero-badge">WEBTE2 • LS 2025/2026</div>
+
+        <h1>Dynamic Systems Laboratory</h1>
 
         <p>
-            Simulácie dynamických systémov pomocou Octave REST API.
+            Web application for CAS calculations, dynamic system simulations,
+            synchronized graphs, request logging and API documentation.
         </p>
+    </section>
 
-        <div class="menu-grid">
-            <a class="menu-card" href="/ball-beam">
-                <h2>Gulička na tyči</h2>
-                <p>Animácia + graf</p>
+    <section class="dashboard-section">
+        <h2>Výpočty</h2>
+
+        <div class="dashboard-grid single">
+            <a href="/cas" class="dashboard-card">
+                <div class="card-icon">⌘</div>
+                <div>
+                    <h3>CAS formulár</h3>
+                    <p>Execute Octave/CAS commands manually using a web form.</p>
+                    <span>Open CAS →</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>Simulácie a grafy</h2>
+
+        <div class="dashboard-grid">
+            <a href="/animations/pendulum" class="dashboard-card">
+                <div class="card-icon">⟲</div>
+                <div>
+                    <h3>Inverzné kyvadlo</h3>
+                    <p>Interactive inverted pendulum animation with synchronized graph.</p>
+                    <span>Open simulation →</span>
+                </div>
             </a>
 
-            <a class="menu-card" href="/inverted-pendulum">
-                <h2>Prevrátené kyvadlo</h2>
-                <p>Animácia + graf</p>
+            <a href="/animations/ball-beam" class="dashboard-card">
+                <div class="card-icon">●</div>
+                <div>
+                    <h3>Gulička na tyči</h3>
+                    <p>Ball and beam dynamic system simulation with real-time data.</p>
+                    <span>Open simulation →</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>Dáta a administrácia</h2>
+
+        <div class="dashboard-grid">
+            <a href="/statistics" class="dashboard-card">
+                <div class="card-icon">◔</div>
+                <div>
+                    <h3>Štatistika animácií</h3>
+                    <p>View usage count and detailed anonymous activity records.</p>
+                    <span>View statistics →</span>
+                </div>
             </a>
 
-            <a class="menu-card" href="/docs">
-                <h2>API dokumentácia</h2>
+            <a href="/logs" class="dashboard-card">
+                <div class="card-icon">☰</div>
+                <div>
+                    <h3>Logy a CSV export</h3>
+                    <p>Browse CAS requests, errors and export log data to CSV.</p>
+                    <span>View logs →</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <section class="dashboard-section">
+        <h2>Dokumentácia</h2>
+
+        <div class="dashboard-grid">
+            <a href="/docs" class="dashboard-card">
+                <div class="card-icon">{ }</div>
+                <div>
+                    <h3>OpenAPI dokumentácia</h3>
+                    <p>Interactive API documentation for all backend endpoints.</p>
+                    <span>Open docs →</span>
+                </div>
             </a>
 
-            <a class="menu-card" href="/stats">
-                <h2>Štatistiky</h2>
+            <a href="/documentation" class="dashboard-card">
+                <div class="card-icon">PDF</div>
+                <div>
+                    <h3>PDF dokumentácia</h3>
+                    <p>Dynamically generated documentation with page numbering.</p>
+                    <span>Open PDF →</span>
+                </div>
             </a>
         </div>
     </section>

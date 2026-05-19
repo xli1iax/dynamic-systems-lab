@@ -14,7 +14,7 @@ class OctaveService
             usleep($delayMs * 1000);
         }
 
-        $wrappedCommand = "disp(jsonencode($command));";
+        $wrappedCommand = $command . PHP_EOL . "disp(jsonencode(__cas_result__));";
 
         $process = new Process([
             'octave',

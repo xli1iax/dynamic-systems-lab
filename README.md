@@ -202,6 +202,51 @@ Dangerous commands are blocked, for example:
 system, unix, dos, delete, rmdir, mkdir, fopen, save, load, cd, ls, exit, quit
 ```
 
+
+
+### CAS supports session-based helper variables between consecutive requests from the same user session.
+
+Example:
+
+Request 1:
+
+```
+{
+  "command": "a=1+1",
+  "source": "form"
+}
+```
+Response:
+```
+{
+"success": true,
+"result": 2
+}
+```
+Request 2:
+```
+{
+"command": "a+2",
+"source": "form"
+}
+```
+Response:
+```
+{
+"success": true,
+"result": 4
+}
+```
+Variables can also be updated:
+```
+{
+"command": "a=a+2",
+"source": "form"
+}
+```
+This functionality allows preserving temporary CAS variables required by the assignment.
+
+
 ---
 
 ### 2. Inverted pendulum animation data
@@ -494,6 +539,8 @@ Implemented backend functionality:
 * separate animation endpoint for inverted pendulum;
 * separate animation endpoint for ball and beam;
 * frontend-ready arrays for synchronized graph and animation.
+* session-based CAS variable persistence between requests;
+* support for user-defined helper variables in CAS calculations;
 
 Still to implement:
 
@@ -506,11 +553,37 @@ Still to implement:
 * animation usage statistics;
 * final video.
 
-````
+## Implemented Features
 
-Для коммита можно так:
+### Main Dashboard
+Implemented a responsive homepage dashboard that serves as the central navigation point of the application.  
+The homepage provides access to all major system modules, including:
 
-```bash
-git add .
-git commit -m "Add protected CAS and animation API endpoints"
-````
+- CAS manual command execution
+- Dynamic system simulations
+- Animation statistics
+- CAS request logs with export
+- OpenAPI API documentation
+- PDF documentation section
+
+The interface was designed as a clean dashboard layout for easier navigation between project functionalities.
+
+### OpenAPI Documentation
+Implemented interactive API documentation using Swagger UI and OpenAPI 3.0.
+
+Documented backend endpoints include:
+
+- `POST /api/cas/execute` — execute CAS/Octave commands
+- `POST /api/animations/pendulum` — inverted pendulum simulation
+- `POST /api/animations/ball-beam` — ball and beam simulation
+- `GET /api/statistics/animations` — animation usage summary
+- `GET /api/statistics/animations/{name}` — animation usage details
+- `GET /api/logs` — retrieve CAS request logs
+- `GET /api/logs/export` — export logs as CSV
+
+Swagger documentation supports:
+
+- interactive endpoint testing
+- API key authentication
+- request/response schema visualization
+- grouped endpoint organization
