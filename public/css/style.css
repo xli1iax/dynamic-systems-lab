@@ -665,3 +665,48 @@ body::before {
 .wide-chart {
     grid-column: 1 / -1;
 }
+.logs-preview {
+    margin-top: 28px;
+}
+
+.logs-preview h2 {
+    margin-bottom: 18px;
+}
+
+.logs-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.logs-table th,
+.logs-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: #dce7ff;
+    vertical-align: top;
+}
+
+.logs-table th {
+    background: rgba(255,255,255,0.08);
+    font-weight: 700;
+}
+
+.logs-table tr:hover {
+    background: rgba(255,255,255,0.04);
+}
+
+.log-command {
+    max-width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
