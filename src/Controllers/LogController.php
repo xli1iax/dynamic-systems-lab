@@ -24,21 +24,21 @@ class LogController
     {
         $logs = $this->logService->getLogs();
 
-        $handle = fopen('php://temp', 'r+');
+        $csv = fopen('php://temp', 'w+');
 
-        fputcsv($handle, [
-            'id',
-            'source',
-            'command',
-            'result',
-            'success',
-            'error_message',
-            'ip_address',
-            'created_at'
-        ], ',', '"', '\\');
+        fputcsv($csv, [
+            'ID',
+            'Source',
+            'Command',
+            'Result',
+            'Success',
+            'Error message',
+            'IP address',
+            'Created at'
+        ], ',', '"', '');
 
         foreach ($logs as $log) {
-            fputcsv($handle, [
+            fputcsv($csv, [
                 $log['id'] ?? '',
                 $log['source'] ?? '',
                 $log['command'] ?? '',
@@ -46,15 +46,17 @@ class LogController
                 $log['success'] ?? '',
                 $log['error_message'] ?? '',
                 $log['ip_address'] ?? '',
-                $log['created_at'] ?? '',
-            ], ',', '"', '\\');
+                $log['created_at'] ?? ''
+            ], ',', '"', '');
         }
 
-        rewind($handle);
-        $csv = stream_get_contents($handle);
-        fclose($handle);
+        rewind($csv);
 
-        $response->getBody()->write($csv);
+        $csvContent = stream_get_contents($csv);
+
+        fclose($csv);
+
+        $response->getBody()->write($csvContent);
 
         return $response
             ->withHeader('Content-Type', 'text/csv; charset=utf-8')
