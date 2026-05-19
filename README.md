@@ -67,6 +67,7 @@ storage/logs/
 
 ```bash
 composer require slim/slim slim/psr7 symfony/process monolog/monolog vlucas/phpdotenv
+composer require zircote/swagger-php 
 ```
 
 ---
@@ -657,3 +658,5 @@ Swagger documentation supports:
 - API key authentication
 - request/response schema visualization
 - grouped endpoint organization
+
+  
