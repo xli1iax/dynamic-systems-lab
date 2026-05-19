@@ -19,6 +19,8 @@ class HomeController
     }
     public function ballBeam(Request $request, Response $response): Response
     {
+        require_once __DIR__ . '/../config.php';
+
         ob_start();
         require __DIR__ . '/../../views/ball-beam.php';
         $html = ob_get_clean();

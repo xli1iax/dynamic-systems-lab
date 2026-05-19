@@ -2,68 +2,80 @@
 <html lang="sk">
 <head>
     <meta charset="UTF-8">
-    <title>Ball Beam Animation</title>
+    <title>Gulička na tyči</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<main class="page">
-    <section class="card">
-        <h1>Gulička na tyči</h1>
-        <p>Animácia dynamického systému s grafom polohy a uhla naklonenia tyče.</p>
+<main class="simulation-page">
+    <div class="simulation-shell">
 
-        <form id="ballBeamForm" class="form">
-            <label>
-                Cieľová pozícia r
-                <input type="number" step="0.01" name="r" value="0.25">
-            </label>
+        <div class="simulation-header">
+            <a href="/" class="back-btn">← Dashboard</a>
+            <h1>Gulička na tyči</h1>
+            <p>Animácia dynamického systému s grafom polohy guličky a uhla naklonenia tyče.</p>
+        </div>
 
-            <label>
-                Trvanie simulácie
-                <input type="number" step="0.1" name="duration" value="5">
-            </label>
+        <form id="ballBeamForm" class="simulation-controls">
+            <div class="input-group">
+                <label for="r">Cieľová pozícia r</label>
+                <input type="number" id="r" name="r" step="0.01" value="0.25">
+            </div>
 
-            <label>
-                Krok simulácie
-                <input type="number" step="0.005" name="step" value="0.01">
-            </label>
+            <div class="input-group">
+                <label for="duration">Trvanie simulácie</label>
+                <input type="number" id="duration" name="duration" step="0.1" value="5">
+            </div>
 
-            <label>
-                Počiatočná pozícia
-                <input type="number" step="0.01" name="initPosition" value="0">
-            </label>
+            <div class="input-group">
+                <label for="step">Krok simulácie</label>
+                <input type="number" id="step" name="step" step="0.005" value="0.01">
+            </div>
 
-            <label>
-                Počiatočná rýchlosť
-                <input type="number" step="0.01" name="initVelocity" value="0">
-            </label>
+            <div class="input-group">
+                <label for="initPosition">Počiatočná pozícia</label>
+                <input type="number" id="initPosition" name="initPosition" step="0.01" value="0">
+            </div>
 
-            <label>
-                Počiatočný uhol
-                <input type="number" step="0.01" name="initAngle" value="0">
-            </label>
+            <div class="input-group">
+                <label for="initVelocity">Počiatočná rýchlosť</label>
+                <input type="number" id="initVelocity" name="initVelocity" step="0.01" value="0">
+            </div>
 
-            <label>
-                Počiatočná uhlová rýchlosť
-                <input type="number" step="0.01" name="initAngularVelocity" value="0">
-            </label>
+            <div class="input-group">
+                <label for="initAngle">Počiatočný uhol</label>
+                <input type="number" id="initAngle" name="initAngle" step="0.01" value="0">
+            </div>
 
-            <button type="submit">Spustiť animáciu</button>
+            <div class="input-group">
+                <label for="initAngularVelocity">Počiatočná uhlová rýchlosť</label>
+                <input type="number" id="initAngularVelocity" name="initAngularVelocity" step="0.01" value="0">
+            </div>
+
+            <button type="submit" id="runBtn">Spustiť simuláciu</button>
         </form>
-    </section>
 
-    <section class="card">
-        <h2>Animácia</h2>
-        <canvas id="ballBeamCanvas" width="1000" height="500"></canvas>
-    </section>
+        <section class="simulation-layout">
+            <div class="simulation-card">
+                <h2>Animácia</h2>
+                <canvas id="ballBeamCanvas" width="1000" height="500"></canvas>
+            </div>
 
-    <section class="card">
-        <h2>Graf</h2>
-        <canvas id="ballBeamChart"></canvas>
-    </section>
+            <div class="simulation-card">
+                <h2>Graf</h2>
+                <canvas id="ballBeamChart"></canvas>
+            </div>
+        </section>
+
+    </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    window.API_KEY = <?= json_encode(getApiKey()) ?>;
+</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="/js/ball-beam.js"></script>
 </body>
 </html>
