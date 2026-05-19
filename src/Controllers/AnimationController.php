@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Services\AnimationService;
 use App\Services\LogService;
+use App\Services\AnimationUsageService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -11,7 +12,8 @@ class AnimationController
 {
     public function __construct(
         private AnimationService $animationService,
-        private LogService $logService
+        private LogService $logService,
+        private AnimationUsageService $animationUsageService
     ) {}
 
     public function invertedPendulum(Request $request, Response $response): Response
@@ -41,10 +43,34 @@ class AnimationController
         callable $callback
     ): Response {
         $data = json_decode($request->getBody()->getContents(), true) ?? [];
+
+        $allowedKeys = [
+            'r',
+            'duration',
+            'step',
+            'initPosition',
+            'initVelocity',
+            'initAngle',
+            'initAngularVelocity'
+        ];
+
+        $extraKeys = array_diff(array_keys($data), $allowedKeys);
+
+        if (!empty($extraKeys)) {
+            return $this->json($response, [
+                'success' => false,
+                'animation' => $animationName,
+                'error' => 'Invalid animation parameters.',
+                'extra_fields' => array_values($extraKeys),
+            ], 400);
+        }
+
         $ip = $_SERVER['REMOTE_ADDR'] ?? null;
 
         try {
             $result = $callback($data);
+
+            $this->animationUsageService->track($animationName, $ip);
 
             $this->logService->saveCasRequest(
                 'animation',

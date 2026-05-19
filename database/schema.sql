@@ -14,3 +14,13 @@ CREATE TABLE IF NOT EXISTS logs (
     ip_address VARCHAR(45) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS animation_usage (
+                                               id INT AUTO_INCREMENT PRIMARY KEY,
+                                               animation_name VARCHAR(100) NOT NULL,
+    user_token VARCHAR(64) NOT NULL,
+    ip_address VARCHAR(45) NULL,
+    city VARCHAR(100) NULL,
+    country VARCHAR(100) NULL,
+    used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
