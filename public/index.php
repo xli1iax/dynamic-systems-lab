@@ -48,6 +48,60 @@ $animationController = new AnimationController(
 
 $animationStatisticsService = new AnimationStatisticsService($pdo);
 $animationStatisticsController = new AnimationStatisticsController($animationStatisticsService);
+$app->get('/cas', function ($request, $response) {
+    ob_start();
+    require __DIR__ . '/../views/cas.php';
+    $html = ob_get_clean();
+
+    $response->getBody()->write($html);
+    return $response;
+});
+
+$app->get('/animations/pendulum', function ($request, $response) {
+    ob_start();
+    require __DIR__ . '/../views/pendulum.php';
+    $html = ob_get_clean();
+
+    $response->getBody()->write($html);
+    return $response;
+});
+
+$app->get('/animations/ball-beam', function ($request, $response) {
+    ob_start();
+    require __DIR__ . '/../views/ball-beam.php';
+    $html = ob_get_clean();
+
+    $response->getBody()->write($html);
+    return $response;
+});
+
+$app->get('/statistics', function ($request, $response) {
+    ob_start();
+    require __DIR__ . '/../views/statistics.php';
+    $html = ob_get_clean();
+
+    $response->getBody()->write($html);
+    return $response;
+});
+
+$app->get('/logs', function ($request, $response) {
+    ob_start();
+    require __DIR__ . '/../views/logs.php';
+    $html = ob_get_clean();
+
+    $response->getBody()->write($html);
+    return $response;
+});
+
+$app->get('/documentation', function ($request, $response) {
+    ob_start();
+    require __DIR__ . '/../views/documentation.php';
+    $html = ob_get_clean();
+
+    $response->getBody()->write($html);
+    return $response;
+});
+
 
 $app->post('/api/animations/pendulum', [$animationController, 'invertedPendulum'])
     ->add(new ApiKeyMiddleware());
