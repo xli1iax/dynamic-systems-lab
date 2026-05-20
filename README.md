@@ -6,6 +6,139 @@ Web application for working with dynamic system simulations and CAS calculations
 The project uses Slim Framework as a lightweight PHP backend.  
 The application runs in Docker with PHP, MariaDB, Octave and phpMyAdmin.
 
+
+## Server deployment and configuration
+
+The application was deployed from the local Docker development environment to the university server `node95.webte.fei.stuba.sk`, which uses Nginx and PHP-FPM.
+
+You can visit page by this linh `node95.webte.fei.stuba.sk/dynamic-systems-lab`
+
+### Nginx routing configuration
+
+Because the application is hosted in a subdirectory (`/dynamic-systems-lab`) instead of the server root, custom Nginx routing rules were added to correctly forward requests to the Slim front controller (`public/index.php`).
+
+Added configuration:
+
+```nginx
+location = /dynamic-systems-lab {
+    return 301 /dynamic-systems-lab/;
+}
+
+location ^~ /dynamic-systems-lab/ {
+    root /var/www/node95.webte.fei.stuba.sk;
+
+    rewrite ^/dynamic-systems-lab/(.*)$ /dynamic-systems-lab/public/$1 break;
+
+    try_files $uri $uri/ /dynamic-systems-lab/public/index.php?$query_string;
+}
+
+location = /dynamic-systems-lab/public/index.php {
+    include fastcgi_params;
+    fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+
+    fastcgi_param SCRIPT_FILENAME /var/www/node95.webte.fei.stuba.sk/dynamic-systems-lab/public/index.php;
+    fastcgi_param DOCUMENT_ROOT /var/www/node95.webte.fei.stuba.sk/dynamic-systems-lab/public;
+    fastcgi_param SCRIPT_NAME /dynamic-systems-lab/public/index.php;
+}
+````
+
+### Route and asset path adjustments
+
+Since the application is deployed in a subdirectory, all internal routes and static asset paths were updated to include the deployment prefix:
+
+```text
+/dynamic-systems-lab/
+```
+
+This included:
+
+* page navigation links
+* API endpoints
+* Swagger documentation paths
+* CSS and JavaScript asset references
+* OpenAPI JSON file location
+
+Example:
+
+```php
+href="/dynamic-systems-lab/cas"
+```
+
+instead of:
+
+```php
+href="/cas"
+```
+
+### Database setup
+
+The application database was configured directly on the university server.
+
+Steps performed:
+
+* created/imported database `dynamic_system_db`
+* imported schema from `database/schema.sql`
+* imported sample data from `database/seed.sql`
+* configured database connection in `.env`
+
+Environment configuration:
+
+```env
+MYSQL_DATABASE=dynamic_system_db
+MYSQL_USER=xzhuravel
+MYSQL_PASSWORD=******
+DB_HOST=localhost
+DB_PORT=3306
+```
+
+### Composer dependencies
+
+Required dependencies were installed on the server using Composer:
+
+* Slim Framework
+* Slim PSR-7
+* Symfony Process
+* Monolog
+* PHP Dotenv
+* Swagger PHP
+* DomPDF
+
+Composer autoload generation was also executed to ensure proper PSR-4 class loading.
+
+### PHP environment verification
+
+The production server uses PHP-FPM (`php8.4-fpm`), so compatibility with required PHP extensions was verified.
+
+Database connectivity required checking availability of:
+
+```text
+pdo_mysql
+mysqli
+mysqlnd
+```
+
+### Swagger / API documentation deployment
+
+Swagger API documentation was adapted for production deployment.
+
+The OpenAPI configuration was updated so that API requests target the deployed application instead of the local Docker environment:
+
+```json
+"servers": [
+  {
+    "url": "https://node95.webte.fei.stuba.sk/dynamic-systems-lab",
+    "description": "Production server"
+  }
+]
+```
+
+# Dynamic Systems Lab
+
+Web application for working with dynamic system simulations and CAS calculations.
+
+The project uses Slim Framework as a lightweight PHP backend.  
+The application runs in Docker with PHP, MariaDB, Octave and phpMyAdmin.
+
 ## Main functionality
 
 - manual CAS command execution through Octave;
