@@ -57,28 +57,27 @@ class AnimationUsageService
 
     private function canCountUsage(string $animationName, string $token, int $intervalMinutes): bool
     {
-        $stmt = $this->pdo->prepare("
-            SELECT used_at
-            FROM animation_usage
-            WHERE animation_name = :animation_name
-              AND user_token = :user_token
-            ORDER BY used_at DESC
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            'animation_name' => $animationName,
-            'user_token' => $token,
-        ]);
-
-        $lastUsedAt = $stmt->fetchColumn();
-
-        if (!$lastUsedAt) {
+        if ($intervalMinutes <= 0) {
             return true;
         }
 
-        return strtotime($lastUsedAt) <= time() - ($intervalMinutes * 60);
+        $stmt = $this->pdo->prepare("
+        SELECT COUNT(*)
+        FROM animation_usage
+        WHERE animation_name = :animation_name
+          AND user_token = :user_token
+          AND used_at >= DATE_SUB(NOW(), INTERVAL :interval_minutes MINUTE)
+    ");
+
+        $stmt->bindValue(':animation_name', $animationName);
+        $stmt->bindValue(':user_token', $token);
+        $stmt->bindValue(':interval_minutes', $intervalMinutes, PDO::PARAM_INT);
+
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn() === 0;
     }
+
 
     private function getLocationByIp(?string $ip): array
     {
