@@ -1,64 +1,99 @@
 
-## Slim backend setup
+# Dynamic Systems Lab
 
-Project uses Slim Framework as a lightweight PHP backend framework.  
-The application runs in Docker with Apache, PHP, MariaDB, Octave and phpMyAdmin.
+Web application for working with dynamic system simulations and CAS calculations.
 
-The backend provides:
-- protected CAS API endpoint;
-- API key authentication middleware;
-- Octave execution service;
-- separate endpoints for dynamic system animations;
+The project uses Slim Framework as a lightweight PHP backend.  
+The application runs in Docker with PHP, MariaDB, Octave and phpMyAdmin.
+
+## Main functionality
+
+- manual CAS command execution through Octave;
+- API key protected backend endpoints;
+- dynamic system simulations:
+  - inverted pendulum;
+  - ball and beam;
 - request logging into MariaDB;
-- frontend-ready JSON responses for graphs and animations.
+- animation usage statistics;
+- CSV export of CAS logs;
+- OpenAPI documentation with Swagger UI;
+- frontend pages for CAS, simulations, logs and statistics.
 
 ---
 
 ## Project structure
 
 ```text
-database/
-  schema.sql
-  seed.sql
-
-docker/
-  apache.conf
-
-nginx/
-  default.conf
-
-php/
-  Dockerfile
-
-public/
-  index.php
-  .htaccess
-  css/
-  js/
-
-src/
-  Controllers/
-    HomeController.php
-    CasController.php
-    AnimationController.php
-    LogController.php
-
-  Middleware/
-    ApiKeyMiddleware.php
-
-  Services/
-    DatabaseService.php
-    OctaveService.php
-    AnimationService.php
-    LogService.php
-
-  Models/
-    Log.php
-
-  config.php
-
-views/
-storage/logs/
+dynamic-systems-lab/
+├── database/
+│   ├── schema.sql
+│   └── seed.sql
+│
+├── docker/
+│   └── apache.conf
+│
+├── nginx/
+│   └── default.conf
+│
+├── php/
+│   └── Dockerfile
+│
+├── public/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   ├── app.js
+│   │   └── ball-beam.js
+│   ├── openapi/
+│   ├── .htaccess
+│   └── index.php
+│
+├── src/
+│   ├── Controllers/
+│   │   ├── AnimationController.php
+│   │   ├── AnimationStatisticsController.php
+│   │   ├── CasController.php
+│   │   ├── DocumentationController.php
+│   │   ├── HomeController.php
+│   │   └── LogController.php
+│   │
+│   ├── Middleware/
+│   │   └── ApiKeyMiddleware.php
+│   │
+│   ├── Models/
+│   │   └── Log.php
+│   │
+│   ├── Services/
+│   │   ├── AnimationService.php
+│   │   ├── AnimationStatisticsService.php
+│   │   ├── AnimationUsageService.php
+│   │   ├── DatabaseService.php
+│   │   ├── LogService.php
+│   │   └── OctaveService.php
+│   │
+│   ├── config.php
+│   └── lang.php
+│
+├── storage/
+│
+├── vendor/
+│
+├── views/
+│   ├── api-docs.php
+│   ├── ball-beam.php
+│   ├── cas.php
+│   ├── home.php
+│   ├── inverted-pendulum.php
+│   ├── logs.php
+│   └── statistics.php
+│
+├── .env
+├── .env.example
+├── .gitignore
+├── composer.json
+├── composer.lock
+├── docker-compose.yml
+└── README.md
 ````
 
 ---
@@ -67,7 +102,7 @@ storage/logs/
 
 ```bash
 composer require slim/slim slim/psr7 symfony/process monolog/monolog vlucas/phpdotenv
-composer require zircote/swagger-php 
+composer require zircote/swagger-php
 composer require dompdf/dompdf -W
 composer update symfony/process -W
 ```
@@ -106,28 +141,6 @@ ANIMATION_STATS_INTERVAL_MINUTES=10
 
 ---
 
-## API key protection
-
-All CAS and animation API endpoints are protected by `ApiKeyMiddleware`.
-
-Every request must contain header:
-
-```text
-X-API-KEY: your_secret_api_key
-```
-
-If the key is missing or invalid, the backend returns:
-
-```json
-{
-  "error": "Unauthorized. Invalid API key."
-}
-```
-
-with HTTP status `401`.
-
----
-
 ## Run project with Docker
 
 ```bash
@@ -148,15 +161,49 @@ http://localhost:8081/
 
 ---
 
+## phpMyAdmin login
+
+Use credentials from `.env`:
+
+```text
+Server: db
+Username: MYSQL_USER
+Password: MYSQL_PASSWORD
+```
+
+---
+
+## API key protection
+
+CAS and animation API endpoints are protected by `ApiKeyMiddleware`.
+
+Every protected request must contain this header:
+
+```text
+X-API-KEY: your_secret_api_key
+```
+
+If the key is missing or invalid, the backend returns:
+
+```json
+{
+  "error": "Unauthorized. Invalid API key."
+}
+```
+
+with HTTP status `401`.
+
+---
+
 ## API endpoints
 
-### 1. Execute custom CAS command
+### Execute CAS command
 
 ```text
 POST /api/cas/execute
 ```
 
-This endpoint is used by the web form where the user enters an Octave/CAS command manually.
+This endpoint is used by the CAS form where the user enters an Octave command manually.
 
 Headers:
 
@@ -183,11 +230,11 @@ Example response:
 }
 ```
 
-Example request for graph data:
+Example request with variable:
 
 ```json
 {
-  "command": "linspace(0,10,5)",
+  "command": "a=1+1",
   "source": "form"
 }
 ```
@@ -197,7 +244,27 @@ Example response:
 ```json
 {
   "success": true,
-  "result": [0, 2.5, 5, 7.5, 10]
+  "result": 2
+}
+```
+
+Variables are stored between consecutive requests from the same user session.
+
+Example next request:
+
+```json
+{
+  "command": "a+2",
+  "source": "form"
+}
+```
+
+Example response:
+
+```json
+{
+  "success": true,
+  "result": 4
 }
 ```
 
@@ -207,60 +274,13 @@ Dangerous commands are blocked, for example:
 system, unix, dos, delete, rmdir, mkdir, fopen, save, load, cd, ls, exit, quit
 ```
 
-
-
-### CAS supports session-based helper variables between consecutive requests from the same user session.
-
-Example:
-
-Request 1:
-
-```
-{
-  "command": "a=1+1",
-  "source": "form"
-}
-```
-Response:
-```
-{
-"success": true,
-"result": 2
-}
-```
-Request 2:
-```
-{
-"command": "a+2",
-"source": "form"
-}
-```
-Response:
-```
-{
-"success": true,
-"result": 4
-}
-```
-Variables can also be updated:
-```
-{
-"command": "a=a+2",
-"source": "form"
-}
-```
-This functionality allows preserving temporary CAS variables required by the assignment.
-
-
 ---
 
-### 2. Inverted pendulum animation data
+### Inverted pendulum animation
 
 ```text
 POST /api/animations/pendulum
 ```
-
-This endpoint calculates data for the inverted pendulum animation.
 
 Example request:
 
@@ -293,22 +313,15 @@ Example response structure:
 }
 ```
 
-The frontend can use:
-
-* `time` as chart labels;
-* `position` for cart/pendulum position graph;
-* `angle` for pendulum angle graph;
-* `finalState` as initial state for the next simulation step.
+The frontend uses this data for synchronized graph and animation rendering.
 
 ---
 
-### 3. Ball and beam animation data
+### Ball and beam animation
 
 ```text
 POST /api/animations/ball-beam
 ```
-
-This endpoint calculates data for the ball and beam animation.
 
 Example request:
 
@@ -341,70 +354,76 @@ Example response structure:
 }
 ```
 
-The frontend can use:
+The frontend uses:
 
 * `time` as chart labels;
 * `position` for ball position;
 * `angle` for beam angle;
-* both arrays for synchronized graph and animation rendering.
+* `finalState` for stable repeated simulation runs.
 
 ---
 
-### 4. Logs export
+### CAS request logs
 
+```text
+GET /api/logs
+```
 
+Returns all stored CAS request logs in JSON format.
 
+Returned data includes:
 
-### Additional Backend Endpoints
-
-Implemented REST API endpoints for logs and animation statistics.
-
-#### CAS Request Logs
-Added endpoints for accessing and exporting logged CAS requests:
-
-- `GET /api/logs`  
-  Returns all stored CAS request logs in JSON format, including:
-    - request source
-    - executed command
-    - calculation result
-    - success/error status
-    - error message
-    - IP address
-    - timestamp
-
-- `GET /api/logs/export`  
-  Exports all stored CAS logs as a downloadable CSV file.
+* request source;
+* executed command;
+* calculation result;
+* success/error status;
+* error message;
+* IP address;
+* timestamp.
 
 ---
 
-#### Animation Usage Statistics
-Implemented endpoints for monitoring animation usage statistics.
+### Export CAS logs
 
-- `GET /api/statistics/animations`  
-  Returns summary statistics showing how many times each animation was used.
+```text
+GET /api/logs/export
+```
 
-  Example response:
-  ```json
-  {
-    "success": true,
-    "data": [
-      {
-        "animation_name": "inverted_pendulum",
-        "total_uses": 1
-      }
-    ]
-  }
-``
+Exports stored CAS logs as a downloadable CSV file.
 
-* `GET /api/statistics/animations/{name}`
-  Returns detailed usage records for a selected animation.
+---
 
-  Returned data includes:
+### Animation usage statistics
 
-    * anonymous user token
-    * city
-    * country
-    * timestamp of usage
+```text
+GET /api/statistics/animations
+```
+
+Returns summary statistics showing how many times each animation was used.
+
+Example response:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "animation_name": "inverted_pendulum",
+      "total_uses": 1
+    }
+  ]
+}
+```
+
+---
+
+### Detailed animation statistics
+
+```text
+GET /api/statistics/animations/{name}
+```
+
+Returns detailed usage records for selected animation.
 
 Example:
 
@@ -424,15 +443,34 @@ Example:
 }
 ```
 
-These endpoints are protected using API key authentication.
+---
 
+## OpenAPI documentation
 
+The project contains OpenAPI documentation with Swagger UI.
 
+Documented endpoints include:
 
+* `POST /api/cas/execute`;
+* `POST /api/animations/pendulum`;
+* `POST /api/animations/ball-beam`;
+* `GET /api/logs`;
+* `GET /api/logs/export`;
+* `GET /api/statistics/animations`;
+* `GET /api/statistics/animations/{name}`.
 
-## CAS and animation architecture
+Swagger UI supports:
 
-The application uses this backend flow:
+* interactive endpoint testing;
+* API key authentication;
+* request and response schema visualization;
+* grouped endpoint organization.
+
+---
+
+## Backend architecture
+
+General request flow:
 
 ```text
 Request
@@ -446,28 +484,34 @@ Request
   -> Database
 ```
 
-For manual CAS commands:
+CAS command flow:
 
 ```text
-CasController -> OctaveService -> LogService -> Log model
+CasController
+  -> OctaveService
+  -> LogService
+  -> Log model
 ```
 
-For animations:
+Animation flow:
 
 ```text
-AnimationController -> AnimationService -> OctaveService -> LogService -> Log model
+AnimationController
+  -> AnimationService
+  -> OctaveService
+  -> AnimationUsageService
+  -> LogService
+  -> Database
 ```
 
 Animation endpoints do not accept raw Octave code.
-They accept only numeric parameters. The Octave script is generated on the backend side.
+They accept only numeric parameters, and the Octave script is generated on the backend side.
 
 ---
 
 ## Request logging
 
-All requests sent to CAS are stored in the database.
-
-Database table:
+All CAS requests are stored in the database table:
 
 ```text
 logs
@@ -548,20 +592,28 @@ Warning: this deletes the local database data.
 
 ---
 
-## phpMyAdmin login
+## Frontend pages
 
-Open:
+The application contains several frontend views:
+
+* `home.php` — main dashboard;
+* `cas.php` — manual CAS command form;
+* `inverted-pendulum.php` — inverted pendulum simulation page;
+* `ball-beam.php` — ball and beam simulation page;
+* `logs.php` — CAS request logs page;
+* `statistics.php` — animation statistics page;
+* `api-docs.php` — OpenAPI documentation page.
+
+Frontend scripts are stored in:
 
 ```text
-http://localhost:8081/
+public/js/
 ```
 
-Use credentials from `.env`:
+Main styles are stored in:
 
 ```text
-Server: db
-Username: MYSQL_USER
-Password: MYSQL_PASSWORD
+public/css/style.css
 ```
 
 ---
@@ -598,69 +650,41 @@ README.md
 
 ---
 
-## Current implemented functionality
+## Implemented functionality
 
 Implemented backend functionality:
 
 * Slim project structure;
-* Docker environment with Apache, PHP, MariaDB and phpMyAdmin;
+* Docker environment with PHP, MariaDB, Octave and phpMyAdmin;
 * PDO database connection through `.env`;
 * API key authentication middleware;
 * protected CAS endpoint;
-* Octave command execution through `Symfony Process`;
+* Octave command execution through Symfony Process;
 * JSON response normalization for frontend;
 * server-side CAS delay using `CAS_DELAY_MS`;
 * request logging into MariaDB;
-* separate animation endpoint for inverted pendulum;
-* separate animation endpoint for ball and beam;
-* frontend-ready arrays for synchronized graph and animation.
+* CSV export of CAS logs;
 * session-based CAS variable persistence between requests;
 * support for user-defined helper variables in CAS calculations;
-
-Still to implement:
-
-* frontend textarea with syntax highlighting;
-* frontend graph rendering;
-* frontend animation rendering;
-* CSV export of logs;
-* OpenAPI documentation;
-* dynamic PDF documentation;
+* separate animation endpoint for inverted pendulum;
+* separate animation endpoint for ball and beam;
+* frontend-ready arrays for synchronized graph and animation;
 * animation usage statistics;
-* final video.
+* OpenAPI documentation;
+* dashboard navigation between project modules.
 
-## Implemented Features
+---
 
-### Main Dashboard
-Implemented a responsive homepage dashboard that serves as the central navigation point of the application.  
-The homepage provides access to all major system modules, including:
+## Notes
 
-- CAS manual command execution
-- Dynamic system simulations
-- Animation statistics
-- CAS request logs with export
-- OpenAPI API documentation
-- PDF documentation section
+The `.env` file must stay local and must not be pushed to GitHub.
 
-The interface was designed as a clean dashboard layout for easier navigation between project functionalities.
+If the database schema was changed after containers were already started, the database volume has to be recreated with:
 
-### OpenAPI Documentation
-Implemented interactive API documentation using Swagger UI and OpenAPI 3.0.
+```bash
+docker compose down -v
+docker compose up -d --build
+```
 
-Documented backend endpoints include:
-
-- `POST /api/cas/execute` — execute CAS/Octave commands
-- `POST /api/animations/pendulum` — inverted pendulum simulation
-- `POST /api/animations/ball-beam` — ball and beam simulation
-- `GET /api/statistics/animations` — animation usage summary
-- `GET /api/statistics/animations/{name}` — animation usage details
-- `GET /api/logs` — retrieve CAS request logs
-- `GET /api/logs/export` — export logs as CSV
-
-Swagger documentation supports:
-
-- interactive endpoint testing
-- API key authentication
-- request/response schema visualization
-- grouped endpoint organization
-
-  
+```
+```
